@@ -22,7 +22,7 @@ jobs:
         run: npm install -g surge
 
       - name: Generate tracks.json
-        run: node generate_tracks.js
+        run: node site/generate_tracks.js
 
       - name: Deploy to Surge
         run: surge ./site joecole.surge.sh --token ${{ secrets.SURGE_TOKEN }}
