@@ -1,4 +1,4 @@
-name: Deploy to Surge
+name: deploy
 
 on:
   push:
@@ -13,16 +13,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
       - name: Install Surge
-        run: npm install --global surge
+        run: npm install -g surge
 
       - name: Generate tracks.json
         run: node generate_tracks.js
 
       - name: Deploy to Surge
-        run: surge ./ joecole.surge.sh --token ${{ secrets.SURGE_TOKEN }}
+        run: surge ./site joecole.surge.sh --token ${{ secrets.SURGE_TOKEN }}
