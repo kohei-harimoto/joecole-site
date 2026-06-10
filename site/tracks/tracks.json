@@ -1,0 +1,9 @@
+{ "songs": {
+  "20260529_君という花": ["Bass.mp3", "Dram.mp3", "Guitar_Yoshiura.mp3", "Vocal.mp3"],
+  "Test": ["Bass 2.mp3"],
+  "原曲分離_ソルジャーガールズ": ["Bass.mp3", "Dram.mp3", "Guitar.mp3", "Vocal.mp3"],
+  "原曲分離_バラ色の日々": ["Bass.mp3", "Dram.mp3", "Vocal.mp3", "guitar.mp3"],
+  "原曲分離_メリッサ": ["Bass.mp3", "Dram.mp3", "Guitar.mp3", "Vocal.mp3"],
+  "原曲分離_リライト": ["Bass.mp3", "Dram.mp3", "Guitar.mp3", "Vocal.mp3"],
+  "原曲分離_君という花": ["Bass.mp3", "Dram.mp3", "Guitar.mp3", "Vocal.mp3"],
+  "原曲分離_場違いハミングバード": ["Bass.mp3", "Dram.mp3", "Vocal.mp3", "guitar.mp3"]}}
