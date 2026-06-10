@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>tracks.json 自動生成（iPad版）</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  button { padding: 10px 20px; font-size: 16px; }
+</style>
+</head>
+<body>
+
+<h2>tracks.json 自動生成ツール（iPad版）</h2>
+<p>下のボタンから <b>tracks フォルダ</b> を選択してください。</p>
+
+<input type="file" id="folderPicker" webkitdirectory directory multiple>
+<button onclick="generate()">tracks.json を生成</button>
+
+<pre id="log"></pre>
+
+<script>
+function log(msg) {
+  document.getElementById("log").textContent += msg + "\n";
+}
+
+function generate() {
+  const input = document.getElementById("folderPicker");
+  const files = input.files;
+
+  if (!files.length) {
+    alert("tracks フォルダを選択してください");
+    return;
+  }
+
+  let result = { songs: {} };
+
+  // フォルダ名ごとに mp3 を集計
+  for (const file of files) {
+    if (!file.webkitRelativePath.endsWith(".mp3")) continue;
+
+    const parts = file.webkitRelativePath.split("/");
+    // 例: tracks/20260529_君という花/Bass.mp3
+    const folder = parts[1];  
+    const filename = parts[2];
+
+    if (!result.songs[folder]) {
+      result.songs[folder] = [];
+    }
+    result.songs[folder].push(filename);
+  }
+
+  // JSON を整形
+  const jsonText = JSON.stringify(result, null, 2);
+
+  // ダウンロード
+  const blob = new Blob([jsonText], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "tracks.json";
+  a.click();
+
+  log("tracks.json を生成しました！");
+}
+</script>
+
+</body>
+</html>

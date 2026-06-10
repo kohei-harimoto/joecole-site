@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>曲一覧</title>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f2f7;
+    }
+
+    .header {
+      background: linear-gradient(90deg, #007aff, #5b5bff);
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .song-card {
+      width: 90%;
+      background: #fff;
+      padding: 18px;
+      margin: 16px auto;
+      border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .song-card:hover {
+      transform: scale(1.02);
+    }
+
+    .song-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .song-folder {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">JoeColeの曲一覧</div>
+
+  <div id="song-list"></div>
+
+  <script>
+    fetch("tracks/tracks.json")
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById("song-list");
+
+        Object.keys(data.songs).forEach(song => {
+          const card = document.createElement("div");
+          card.className = "song-card";
+          card.onclick = () => {
+            location.href = `player.html?song=${song}`;
+          };
+
+          card.innerHTML = `
+            <div class="song-title">${song}</div>
+            <div class="song-folder">${song}</div>
+          `;
+
+          list.appendChild(card);
+        });
+      })
+      .catch(err => console.error("tracks.json 読み込みエラー:", err));
+  </script>
+
+</body>
+</html>

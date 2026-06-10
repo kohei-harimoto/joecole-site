@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プレイヤー</title>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f2f7;
+      padding-bottom: 160px; /* フッター分の余白 */
+    }
+
+    /* ---- ヘッダー固定 ---- */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #007aff, #5b5bff);
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      z-index: 1000;
+    }
+
+    /* ---- フッター固定 ---- */
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(242,242,247,0.95);
+      padding: 12px;
+      border-top: 1px solid #ccc;
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+
+    .footer button {
+      font-size: 22px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    /* ---- ミキサー風トラックカード ---- */
+    .track-card {
+      width: 90%;
+      background: #fff;
+      padding: 14px 16px;
+      margin: 80px auto 10px; /* ヘッダー分の余白 + 間隔を詰める */
+      border-radius: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+
+      display: flex;
+      flex-direction: column;
+      gap: 8px; /* ← 間隔を詰める */
+    }
+
+    .track-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    /* ---- 音量スライダー（太め） ---- */
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 5px;
+      background: #ddd;
+      accent-color: #007aff;
+    }
+
+    /* ---- MUTE / SOLO ボタン（丸くて音楽アプリ風） ---- */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-row button {
+      flex: 1;
+      padding: 8px 0;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      background: #e5e5ea;
+      font-weight: 600;
+    }
+
+    .btn-row button.active {
+      background: #ff3b30;
+      color: white;
+    }
+
+    .btn-row button.solo-active {
+      background: #0a84ff;
+      color: white;
+    }
+
+    .seek-wrapper {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header" id="song-title"></div>
+
+  <div id="tracks-container"></div>
+
+  <div class="footer">
+    <button id="play-all">▶</button>
+    <button id="stop-all">■</button>
+
+    <div class="seek-wrapper">
+      <input type="range" id="seek-bar" value="0" min="0" step="0.1" style="width:100%;">
+      <div>
+        <span id="current-time">0:00</span> /
+        <span id="duration">0:00</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
