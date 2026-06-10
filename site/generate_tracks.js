@@ -1,12 +1,15 @@
 // generate_tracks.js
 // --------------------------------------
-// tracks フォルダを読み取り、tracks.json を自動生成する
+// site/tracks フォルダを読み取り、tracks.json を自動生成する
 // --------------------------------------
 
 const fs = require("fs");
 const path = require("path");
 
+// generate_tracks.js が site/ にあるので、tracks は ./tracks
 const tracksDir = path.join(__dirname, "tracks");
+
+// tracks.json も tracks/ の中に置く
 const outputFile = path.join(tracksDir, "tracks.json");
 
 let result = { songs: {} };
