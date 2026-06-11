@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Install Surge
-        run: npm install -g surge
+    - name: Install Surge
+      run: npm install -g surge
 
-      - name: Deploy to Surge
-        run: surge ./site joecole.surge.sh --token ${{ secrets.SURGE_TOKEN }}
+    - name: Deploy to Surge
+      run: surge ./site joecole.surge.sh --token ${{ secrets.SURGE_TOKEN }}
