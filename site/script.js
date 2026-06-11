@@ -43,6 +43,8 @@ if (location.pathname.endsWith("player.html")) {
 
     const playBtn = document.getElementById("play-all");
     const stopBtn = document.getElementById("stop-all");
+    const rewindBtn = document.getElementById("rewind");
+    const forwardBtn = document.getElementById("forward");
 
     let audioElements = [];
     let isSeeking = false;
@@ -147,7 +149,7 @@ if (location.pathname.endsWith("player.html")) {
     }
 
     // ================================
-    // Play / Pause トグル（統合版）
+    // Play / Pause トグル
     // ================================
     playBtn.onclick = () => {
         if (!isPlaying) {
@@ -156,12 +158,12 @@ if (location.pathname.endsWith("player.html")) {
                 a.currentTime = seekBar.value;
                 a.play();
             });
-            playBtn.textContent = "⏸️"; // ← Pause 表示
+            playBtn.textContent = "⏸️"; // Pause 表示
             isPlaying = true;
         } else {
             // ---- 一時停止 ----
             audioElements.forEach(a => a.pause());
-            playBtn.textContent = "▶️"; // ← Play 表示
+            playBtn.textContent = "▶️"; // Play 表示
             isPlaying = false;
         }
     };
@@ -178,6 +180,28 @@ if (location.pathname.endsWith("player.html")) {
         currentTimeLabel.textContent = "0:00";
         playBtn.textContent = "▶️";
         isPlaying = false;
+    };
+
+    // ================================
+    // 10秒巻き戻し
+    // ================================
+    rewindBtn.onclick = () => {
+        if (audioElements.length === 0) return;
+        const t = Math.max(0, audioElements[0].currentTime - 10);
+        audioElements.forEach(a => a.currentTime = t);
+        seekBar.value = t;
+        currentTimeLabel.textContent = formatTime(t);
+    };
+
+    // ================================
+    // 10秒早送り
+    // ================================
+    forwardBtn.onclick = () => {
+        if (audioElements.length === 0) return;
+        const t = Math.min(audioElements[0].duration, audioElements[0].currentTime + 10);
+        audioElements.forEach(a => a.currentTime = t);
+        seekBar.value = t;
+        currentTimeLabel.textContent = formatTime(t);
     };
 
     // ================================
