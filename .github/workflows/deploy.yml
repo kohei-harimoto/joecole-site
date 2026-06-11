@@ -1,21 +1,28 @@
-name: Deploy to Surge
+name: deploy
 
 on:
   push:
     branches:
       - main
-      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install Surge
-      run: npm install -g surge
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    - name: Deploy to Surge
-      run: surge ./site joecole.surge.sh --token ${{ secrets.SURGE_TOKEN }}
+      - name: Install Surge
+        run: npm install -g surge
+
+      - name: Generate tracks.json
+        run: node site/generate_tracks.js
+
+      - name: Deploy to Surge
+        run: surge ./site joecole.surge.sh --token ${{ secrets.SURGE_TOKEN }}
