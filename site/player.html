@@ -1,154 +1,66 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>プレイヤー</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DAW Player</title>
 
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f2f2f7;
-      padding-bottom: 160px; /* フッター分の余白 */
-    }
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
 
-    /* ---- ヘッダー固定 ---- */
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: linear-gradient(90deg, #007aff, #5b5bff);
-      color: #fff;
-      padding: 16px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      z-index: 1000;
-    }
+        #track-list {
+            margin-bottom: 20px;
+        }
 
-    /* ---- フッター固定（修正版） ---- */
-    .footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(242,242,247,0.95);
+        .track-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
 
-      /* ← ここを修正（左右20pxの余白） */
-      padding: 16px 20px;
+        .track-item:hover {
+            background: #e9e9e9;
+        }
 
-      border-top: 1px solid #ccc;
-      backdrop-filter: blur(10px);
-      z-index: 1000;
-      box-sizing: border-box;
-    }
+        #controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
 
-    .footer button {
-      font-size: 22px;
-      padding: 10px 20px;
-      border-radius: 12px;
-      border: none;
-      background: #007aff;
-      color: white;
-      cursor: pointer;
-      margin-right: 10px;
-    }
+        #seekBar {
+            width: 100%;
+        }
 
-    /* ---- ミキサー風トラックカード ---- */
-    .track-card {
-      width: 90%;
-      background: #fff;
-      padding: 14px 16px;
-      margin: 80px auto 10px;
-      border-radius: 14px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .track-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    /* ---- 音量スライダー ---- */
-    input[type="range"] {
-      width: 100%;
-      height: 6px;
-      border-radius: 5px;
-      background: #ddd;
-      accent-color: #007aff;
-    }
-
-    /* ---- MUTE / SOLO ---- */
-    .btn-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-row button {
-      flex: 1;
-      padding: 8px 0;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      background: #e5e5ea;
-      font-weight: 600;
-    }
-
-    .btn-row button.active {
-      background: #ff3b30;
-      color: white;
-    }
-
-    .btn-row button.solo-active {
-      background: #0a84ff;
-      color: white;
-    }
-
-    /* ---- シークバー周り（修正版） ---- */
-    .seek-wrapper {
-      margin-top: 10px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    #seek-bar {
-      width: 100%; /* フッター内の余白を考慮して100% */
-      height: 6px;
-      border-radius: 3px;
-      box-sizing: border-box;
-    }
-  </style>
+        #time {
+            width: 80px;
+            text-align: right;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
+    <h2>DAW Player</h2>
 
-  <div class="header" id="song-title"></div>
+    <div id="track-list"></div>
 
-  <div id="tracks-container"></div>
-
-  <div class="footer">
-    <button id="play-all">▶</button>
-    <button id="stop-all">■</button>
-
-    <div class="seek-wrapper">
-      <input type="range" id="seek-bar" value="0" min="0" step="0.1">
-      <div>
-        <span id="current-time">0:00</span> /
-        <span id="duration">0:00</span>
-      </div>
+    <div id="controls">
+        <button id="play-pause">▶️</button>
+        <input type="range" id="seekBar" min="0" value="0" step="0.01">
+        <span id="time">0:00 / 0:00</span>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <audio id="audio"></audio>
 
+    <script src="script.js"></script>
 </body>
 </html>
