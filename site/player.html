@@ -59,13 +59,18 @@
     }
 
     /* ---- ミキサー風トラックカード ---- */
-    .track-card {
-      width: 90%;
-      background: #fff;
-      padding: 14px 16px;
-      margin: 80px auto 10px;
-      border-radius: 14px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+.track-card {
+  width: 90%;
+  background: #fff;
+  padding: 14px 16px;
+  margin: 20px auto 10px; /* ← 全体を詰める */
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.track-card:first-child {
+  margin-top: 80px; /* ← 最初のカードだけ大きく */
+}
 
       display: flex;
       flex-direction: column;
@@ -136,8 +141,11 @@
   <div id="tracks-container"></div>
 
   <div class="footer">
-    <button id="play-all">&#9654;</button>
-    <button id="stop-all">■</button>
+  <button id="rewind">⏪ 10s</button>
+  <button id="play-all">&#9654;</button>
+  <button id="forward">10s ⏩</button>
+  <button id="stop-all">&#9632;</button>
+
 
     <div class="seek-wrapper">
       <input type="range" id="seek-bar" value="0" min="0" step="0.1">
