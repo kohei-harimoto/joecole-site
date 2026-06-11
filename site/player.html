@@ -3,152 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>プレイヤー</title>
+  <title>DAW Player</title>
 
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
       padding: 0;
-      background: #f2f2f7;
-      padding-bottom: 160px; /* フッター分の余白 */
-    }
-
-    /* ---- ヘッダー固定 ---- */
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: linear-gradient(90deg, #007aff, #5b5bff);
+      background: #000;
       color: #fff;
-      padding: 16px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      z-index: 1000;
+      padding-bottom: 200px;
     }
 
-    /* ---- フッター固定（修正版） ---- */
-    .footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(242,242,247,0.95);
-
-      /* ← ここを修正（左右20pxの余白） */
-      padding: 16px 20px;
-
-      border-top: 1px solid #ccc;
-      backdrop-filter: blur(10px);
-      z-index: 1000;
-      box-sizing: border-box;
-    }
-
-    .footer button {
-      font-size: 22px;
-      padding: 10px 20px;
-      border-radius: 12px;
-      border: none;
-      background: #007aff;
-      color: white;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-
-    /* ---- ミキサー風トラックカード ---- */
+    /* ---- トラックカード ---- */
     .track-card {
       width: 90%;
-      background: #fff;
-      padding: 14px 16px;
-      margin: 80px auto 10px;
-      border-radius: 14px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-
+      background: #111;
+      padding: 12px;
+      margin: 12px auto;
+      border-radius: 10px;
+      border: 1px solid #333;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .track-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #333;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
     }
 
-    /* ---- 音量スライダー ---- */
-    input[type="range"] {
-      width: 100%;
-      height: 6px;
-      border-radius: 5px;
-      background: #ddd;
-      accent-color: #007aff;
+    /* ---- 縦フェーダー ---- */
+    .fader-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+    }
+
+    .fader-wrapper input[type="range"] {
+      width: 100px;
+      height: 24px;
+      transform: rotate(-90deg);
+      accent-color: #ffcc00;
     }
 
     /* ---- MUTE / SOLO ---- */
     .btn-row {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     .btn-row button {
       flex: 1;
-      padding: 8px 0;
-      border-radius: 20px;
-      border: none;
+      padding: 6px 0;
+      border-radius: 16px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+      font-size: 12px;
       cursor: pointer;
-      background: #e5e5ea;
-      font-weight: 600;
     }
 
-    .btn-row button.active {
+    .mute.active {
       background: #ff3b30;
-      color: white;
+      color: #fff;
     }
 
-    .btn-row button.solo-active {
-      background: #0a84ff;
-      color: white;
+    .solo.active {
+      background: #ffcc00;
+      color: #000;
     }
 
-    /* ---- シークバー周り（修正版） ---- */
-    .seek-wrapper {
-      margin-top: 10px;
+    /* ---- フッター操作部 ---- */
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
       width: 100%;
+      background: #000;
+      padding: 12px;
+      border-top: 1px solid #333;
       box-sizing: border-box;
     }
 
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .control-row button {
+      flex: 1;
+      margin: 0 4px;
+      padding: 10px 0;
+      font-size: 20px;
+      border-radius: 10px;
+      border: 1px solid #444;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* 再生・一時停止アイコン */
+    #play-pause {
+      background: #ffcc00;
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* ---- A / B / Loop ---- */
+    .loop-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .loop-row button {
+      flex: 1;
+      margin: 0 4px;
+      padding: 6px 0;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid #444;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* Loop ON（黄色＋太枠線） */
+    .loop-active {
+      background: #ffcc00 !important;
+      color: #000 !important;
+      border: 3px solid #ffcc00 !important;
+      font-weight: bold;
+    }
+
+    /* ---- シークバー ---- */
     #seek-bar {
-      width: 100%; /* フッター内の余白を考慮して100% */
-      height: 6px;
-      border-radius: 3px;
-      box-sizing: border-box;
+      width: 100%;
+      accent-color: #ffcc00;
+    }
+
+    #current-time,
+    #duration {
+      font-size: 12px;
+      color: #fff;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="header" id="song-title"></div>
-
   <div id="tracks-container"></div>
 
   <div class="footer">
-    <button id="play-all">▶</button>
-    <button id="stop-all">■</button>
 
-    <div class="seek-wrapper">
-      <input type="range" id="seek-bar" value="0" min="0" step="0.1">
-      <div>
-        <span id="current-time">0:00</span> /
-        <span id="duration">0:00</span>
-      </div>
+    <!-- 上段：巻き戻し / 再生 / 先送り -->
+    <div class="control-row">
+      <button id="rewind">⏪</button>
+      <button id="play-pause">▶︎</button>
+      <button id="forward">⏩</button>
     </div>
+
+    <!-- 停止 -->
+    <div class="control-row">
+      <button id="stop">■</button>
+    </div>
+
+    <!-- A / B / Loop -->
+    <div class="loop-row">
+      <button id="setA">A</button>
+      <button id="setB">B</button>
+      <button id="loop">Loop</button>
+    </div>
+
+    <!-- シークバー -->
+    <input type="range" id="seek-bar" value="0" min="0" step="0.1">
+    <div>
+      <span id="current-time">0:00</span> /
+      <span id="duration">0:00</span>
+    </div>
+
   </div>
 
   <script src="script.js"></script>
-
 </body>
 </html>
