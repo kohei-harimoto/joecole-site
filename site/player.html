@@ -30,17 +30,21 @@
       z-index: 1000;
     }
 
-    /* ---- フッター固定 ---- */
+    /* ---- フッター固定（修正版） ---- */
     .footer {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
       background: rgba(242,242,247,0.95);
-      padding: 12px;
+
+      /* ← ここを修正（左右20pxの余白） */
+      padding: 16px 20px;
+
       border-top: 1px solid #ccc;
       backdrop-filter: blur(10px);
       z-index: 1000;
+      box-sizing: border-box;
     }
 
     .footer button {
@@ -59,13 +63,13 @@
       width: 90%;
       background: #fff;
       padding: 14px 16px;
-      margin: 80px auto 10px; /* ヘッダー分の余白 + 間隔を詰める */
+      margin: 80px auto 10px;
       border-radius: 14px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 
       display: flex;
       flex-direction: column;
-      gap: 8px; /* ← 間隔を詰める */
+      gap: 8px;
     }
 
     .track-title {
@@ -74,7 +78,7 @@
       color: #333;
     }
 
-    /* ---- 音量スライダー（太め） ---- */
+    /* ---- 音量スライダー ---- */
     input[type="range"] {
       width: 100%;
       height: 6px;
@@ -83,7 +87,7 @@
       accent-color: #007aff;
     }
 
-    /* ---- MUTE / SOLO ボタン（丸くて音楽アプリ風） ---- */
+    /* ---- MUTE / SOLO ---- */
     .btn-row {
       display: flex;
       gap: 10px;
@@ -109,8 +113,18 @@
       color: white;
     }
 
+    /* ---- シークバー周り（修正版） ---- */
     .seek-wrapper {
       margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #seek-bar {
+      width: 100%; /* フッター内の余白を考慮して100% */
+      height: 6px;
+      border-radius: 3px;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -126,7 +140,7 @@
     <button id="stop-all">■</button>
 
     <div class="seek-wrapper">
-      <input type="range" id="seek-bar" value="0" min="0" step="0.1" style="width:100%;">
+      <input type="range" id="seek-bar" value="0" min="0" step="0.1">
       <div>
         <span id="current-time">0:00</span> /
         <span id="duration">0:00</span>
