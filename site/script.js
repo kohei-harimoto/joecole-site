@@ -1,32 +1,4 @@
 // ================================
-// トップページ（index.html）
-// ================================
-if (location.pathname.endsWith("index.html") || location.pathname.endsWith("/")) {
-
-    const songList = document.getElementById("song-list");
-
-    fetch("tracks/tracks.json")
-        .then(res => res.json())
-        .then(data => {
-            const songs = Object.keys(data.songs);
-
-            songs.forEach(songName => {
-                const item = document.createElement("div");
-                item.className = "song-item";
-                item.textContent = songName;
-
-                item.onclick = () => {
-                    location.href = `player.html?song=${encodeURIComponent(songName)}`;
-                };
-
-                songList.appendChild(item);
-            });
-        });
-}
-
-
-
-// ================================
 // プレイヤーページ（player.html）
 // ================================
 if (location.pathname.endsWith("player.html")) {
@@ -51,7 +23,10 @@ if (location.pathname.endsWith("player.html")) {
         .then(res => res.json())
         .then(data => {
             const parts = data.songs[songName];
-            parts.forEach(fileName => createTrackCard(fileName));
+
+            parts.forEach(fileName => {
+                createTrackCard(fileName);
+            });
         });
 
     // ================================
@@ -63,22 +38,6 @@ if (location.pathname.endsWith("player.html")) {
 
         const audio = new Audio(`tracks/${songName}/${fileName}`);
         audio.preload = "metadata";
-
-        // ---- duration が読めたら UI 更新 ----
-        audio.addEventListener("loadedmetadata", () => {
-            if (audioElements.length === 0) {
-                seekBar.max = audio.duration;
-                durationLabel.textContent = formatTime(audio.duration);
-            }
-        });
-
-        // ---- 再生中にシークバー更新 ----
-        audio.addEventListener("timeupdate", () => {
-            if (!isSeeking && audioElements[0] === audio) {
-                seekBar.value = audio.currentTime;
-                currentTimeLabel.textContent = formatTime(audio.currentTime);
-            }
-        });
 
         const title = document.createElement("div");
         title.className = "track-title";
@@ -146,26 +105,47 @@ if (location.pathname.endsWith("player.html")) {
             a.currentTime = 0;
         });
         seekBar.value = 0;
-        currentTimeLabel.textContent = "0:00";
     };
 
     // ================================
-    // シークバー操作
+    // シークバー同期
     // ================================
-    seekBar.addEventListener("input", () => {
-        isSeeking = true;
-        const t = Number(seekBar.value);
-        audioElements.forEach(a => a.currentTime = t);
-        currentTimeLabel.textContent = formatTime(t);
-    });
+    function syncSeekBar() {
+        if (audioElements.length === 0) return;
 
-    seekBar.addEventListener("change", () => {
-        isSeeking = false;
-    });
+        const main = audioElements[0];
+
+        if (!isSeeking) {
+            seekBar.value = main.currentTime;
+            currentTimeLabel.textContent = formatTime(main.currentTime);
+        }
+
+        requestAnimationFrame(syncSeekBar);
+    }
 
     function formatTime(sec) {
         const m = Math.floor(sec / 60);
         const s = Math.floor(sec % 60);
         return `${m}:${s.toString().padStart(2, "0")}`;
     }
+
+    seekBar.addEventListener("input", () => {
+        isSeeking = true;
+        const t = Number(seekBar.value);
+        audioElements.forEach(a => a.currentTime = t);
+    });
+
+    seekBar.addEventListener("change", () => {
+        isSeeking = false;
+    });
+
+    const durationCheck = setInterval(() => {
+        if (audioElements.length > 0 && audioElements[0].duration) {
+            seekBar.max = audioElements[0].duration;
+            durationLabel.textContent = formatTime(audioElements[0].duration);
+            clearInterval(durationCheck);
+        }
+    }, 500);
+
+    syncSeekBar();
 }
