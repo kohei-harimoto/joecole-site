@@ -1,186 +1,194 @@
-// ================================
-// トップページ（index.html）
-// ================================
-if (location.pathname.endsWith("index.html") || location.pathname.endsWith("/")) {
+let tracks = [];
+let isPlaying = false;
+let Apoint = null;
+let Bpoint = null;
+let loopEnabled = false;
 
-    const songList = document.getElementById("song-list");
+const tracksContainer = document.getElementById("tracks-container");
+const playPauseBtn = document.getElementById("play-pause");
+const stopBtn = document.getElementById("stop");
+const rewindBtn = document.getElementById("rewind");
+const forwardBtn = document.getElementById("forward");
+const seekBar = document.getElementById("seek-bar");
+const currentTimeLabel = document.getElementById("current-time");
+const durationLabel = document.getElementById("duration");
 
-    fetch("tracks/tracks.json")
-        .then(res => res.json())
-        .then(data => {
-            const songs = Object.keys(data.songs);
+const setABtn = document.getElementById("setA");
+const setBBtn = document.getElementById("setB");
+const loopBtn = document.getElementById("loop");
 
-            songs.forEach(songName => {
-                const item = document.createElement("div");
-                item.className = "song-item";
-                item.textContent = songName;
+/* -------------------------
+   mp3 読み込み（tracks.json）
+------------------------- */
+fetch("tracks.json")
+  .then(res => res.json())
+  .then(data => {
+    data.forEach((file, index) => {
+      const audio = new Audio(file);
+      audio.preload = "auto";
+      tracks.push({ audio, index, file });
 
-                item.onclick = () => {
-                    location.href = `player.html?song=${encodeURIComponent(songName)}`;
-                };
+      createTrackCard(index, file);
+    });
 
-                songList.appendChild(item);
-            });
-        });
+    // duration が揃うまで待つ
+    setTimeout(() => {
+      if (tracks[0]) {
+        durationLabel.textContent = formatTime(tracks[0].audio.duration);
+        seekBar.max = tracks[0].audio.duration;
+      }
+    }, 500);
+  });
+
+/* -------------------------
+   トラックカード生成
+------------------------- */
+function createTrackCard(index, file) {
+  const card = document.createElement("div");
+  card.className = "track-card";
+
+  const title = document.createElement("div");
+  title.className = "track-title";
+  title.textContent = file;
+
+  const faderWrapper = document.createElement("div");
+  faderWrapper.className = "fader-wrapper";
+
+  const fader = document.createElement("input");
+  fader.type = "range";
+  fader.min = 0;
+  fader.max = 1;
+  fader.step = 0.01;
+  fader.value = 1;
+
+  fader.addEventListener("input", () => {
+    tracks[index].audio.volume = fader.value;
+  });
+
+  faderWrapper.appendChild(fader);
+
+  const btnRow = document.createElement("div");
+  btnRow.className = "btn-row";
+
+  const muteBtn = document.createElement("button");
+  muteBtn.textContent = "MUTE";
+  muteBtn.className = "mute";
+
+  muteBtn.addEventListener("click", () => {
+    muteBtn.classList.toggle("active");
+    tracks[index].audio.muted = muteBtn.classList.contains("active");
+  });
+
+  const soloBtn = document.createElement("button");
+  soloBtn.textContent = "SOLO";
+  soloBtn.className = "solo";
+
+  soloBtn.addEventListener("click", () => {
+    soloBtn.classList.toggle("active");
+
+    if (soloBtn.classList.contains("active")) {
+      tracks.forEach((t, i) => {
+        t.audio.muted = i !== index;
+      });
+    } else {
+      tracks.forEach(t => (t.audio.muted = false));
+    }
+  });
+
+  btnRow.appendChild(muteBtn);
+  btnRow.appendChild(soloBtn);
+
+  card.appendChild(title);
+  card.appendChild(faderWrapper);
+  card.appendChild(btnRow);
+
+  tracksContainer.appendChild(card);
 }
 
+/* -------------------------
+   再生・一時停止
+------------------------- */
+playPauseBtn.addEventListener("click", () => {
+  if (!isPlaying) {
+    tracks.forEach(t => t.audio.play());
+    playPauseBtn.textContent = "⏸";
+    isPlaying = true;
+  } else {
+    tracks.forEach(t => t.audio.pause());
+    playPauseBtn.textContent = "▶︎";
+    isPlaying = false;
+  }
+});
 
+/* -------------------------
+   停止
+------------------------- */
+stopBtn.addEventListener("click", () => {
+  tracks.forEach(t => {
+    t.audio.pause();
+    t.audio.currentTime = 0;
+  });
+  playPauseBtn.textContent = "▶︎";
+  isPlaying = false;
+});
 
-// ================================
-// プレイヤーページ（player.html）
-// ================================
-if (location.pathname.endsWith("player.html")) {
+/* -------------------------
+   10秒巻き戻し / 先送り
+------------------------- */
+rewindBtn.addEventListener("click", () => {
+  tracks.forEach(t => {
+    t.audio.currentTime = Math.max(0, t.audio.currentTime - 10);
+  });
+});
 
-    const params = new URLSearchParams(location.search);
-    const songName = params.get("song");
+forwardBtn.addEventListener("click", () => {
+  tracks.forEach(t => {
+    t.audio.currentTime = Math.min(t.audio.duration, t.audio.currentTime + 10);
+  });
+});
 
-    document.getElementById("song-title").textContent = songName;
+/* -------------------------
+   A / B / Loop
+------------------------- */
+setABtn.addEventListener("click", () => {
+  Apoint = tracks[0].audio.currentTime;
+});
 
-    const tracksContainer = document.getElementById("tracks-container");
-    const seekBar = document.getElementById("seek-bar");
-    const currentTimeLabel = document.getElementById("current-time");
-    const durationLabel = document.getElementById("duration");
+setBBtn.addEventListener("click", () => {
+  Bpoint = tracks[0].audio.currentTime;
+});
 
-    let audioElements = [];
-    let isSeeking = false;
+loopBtn.addEventListener("click", () => {
+  loopEnabled = !loopEnabled;
+  loopBtn.classList.toggle("loop-active");
+});
 
-    // ================================
-    // tracks.json から mp3 のファイル名を取得
-    // ================================
-    fetch("tracks/tracks.json")
-        .then(res => res.json())
-        .then(data => {
-            const parts = data.songs[songName];
-            parts.forEach(fileName => createTrackCard(fileName));
-        });
+/* -------------------------
+   シークバー同期
+------------------------- */
+setInterval(() => {
+  if (tracks.length === 0) return;
 
-    // ================================
-    // トラックカード生成（音量＋MUTE＋SOLO）
-    // ================================
-    function createTrackCard(fileName) {
-        const card = document.createElement("div");
-        card.className = "track-card";
+  const t = tracks[0].audio;
+  seekBar.value = t.currentTime;
+  currentTimeLabel.textContent = formatTime(t.currentTime);
 
-        const audio = new Audio(`tracks/${songName}/${fileName}`);
-        audio.preload = "metadata";
-
-        // ---- duration を確実に取得する3段構え ----
-        audio.addEventListener("loadedmetadata", updateDuration);
-        audio.addEventListener("canplay", updateDuration);
-        audio.addEventListener("durationchange", updateDuration);
-
-        // ---- 再生中にシークバー更新 ----
-        audio.addEventListener("timeupdate", () => {
-            if (!isSeeking && audioElements[0] === audio) {
-                seekBar.value = audio.currentTime;
-                currentTimeLabel.textContent = formatTime(audio.currentTime);
-            }
-        });
-
-        const title = document.createElement("div");
-        title.className = "track-title";
-        title.textContent = fileName;
-
-        const volume = document.createElement("input");
-        volume.type = "range";
-        volume.min = 0;
-        volume.max = 1;
-        volume.step = 0.01;
-        volume.value = 1;
-        volume.oninput = () => audio.volume = volume.value;
-
-        // ---- MUTE / SOLO ----
-        const btnRow = document.createElement("div");
-        btnRow.className = "btn-row";
-
-        const muteBtn = document.createElement("button");
-        muteBtn.textContent = "MUTE";
-        muteBtn.onclick = () => {
-            audio.muted = !audio.muted;
-            muteBtn.classList.toggle("active", audio.muted);
-        };
-
-        const soloBtn = document.createElement("button");
-        soloBtn.textContent = "SOLO";
-        soloBtn.onclick = () => {
-            const soloMode = !audio.dataset.solo;
-            audio.dataset.solo = soloMode ? "1" : "";
-
-            audioElements.forEach(a => {
-                a.muted = a !== audio && soloMode;
-            });
-
-            soloBtn.classList.toggle("solo-active", soloMode);
-        };
-
-        btnRow.appendChild(muteBtn);
-        btnRow.appendChild(soloBtn);
-
-        card.appendChild(title);
-        card.appendChild(volume);
-        card.appendChild(btnRow);
-
-        tracksContainer.appendChild(card);
-        audioElements.push(audio);
+  if (loopEnabled && Apoint !== null && Bpoint !== null) {
+    if (t.currentTime >= Bpoint) {
+      tracks.forEach(a => (a.audio.currentTime = Apoint));
     }
+  }
+}, 200);
 
-    // ================================
-    // 全トラックの duration を見て最大値をセット
-    // ================================
-    function updateDuration() {
-        let maxDur = 0;
+seekBar.addEventListener("input", () => {
+  tracks.forEach(t => (t.audio.currentTime = seekBar.value));
+});
 
-        audioElements.forEach(a => {
-            if (!isNaN(a.duration) && a.duration !== Infinity) {
-                if (a.duration > maxDur) maxDur = a.duration;
-            }
-        });
-
-        if (maxDur > 0) {
-            seekBar.max = maxDur;
-            durationLabel.textContent = formatTime(maxDur);
-        }
-    }
-
-    // ================================
-    // 全体再生
-    // ================================
-    document.getElementById("play-all").onclick = () => {
-        audioElements.forEach(a => {
-            a.currentTime = seekBar.value;
-            a.play();
-        });
-    };
-
-    // ================================
-    // 全体停止
-    // ================================
-    document.getElementById("stop-all").onclick = () => {
-        audioElements.forEach(a => {
-            a.pause();
-            a.currentTime = 0;
-        });
-        seekBar.value = 0;
-        currentTimeLabel.textContent = "0:00";
-    };
-
-    // ================================
-    // シークバー操作
-    // ================================
-    seekBar.addEventListener("input", () => {
-        isSeeking = true;
-        const t = Number(seekBar.value);
-        audioElements.forEach(a => a.currentTime = t);
-        currentTimeLabel.textContent = formatTime(t);
-    });
-
-    seekBar.addEventListener("change", () => {
-        isSeeking = false;
-    });
-
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return `${m}:${s.toString().padStart(2, "0")}`;
-    }
+/* -------------------------
+   時間フォーマット
+------------------------- */
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
