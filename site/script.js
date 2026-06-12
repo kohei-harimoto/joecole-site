@@ -50,6 +50,9 @@ if (location.pathname.endsWith("player.html")) {
     let isSeeking = false;
     let isPlaying = false;
 
+    // ================================
+    // tracks.json から mp3 のファイル名を取得
+    // ================================
     fetch("tracks/tracks.json")
         .then(res => res.json())
         .then(data => {
@@ -57,6 +60,9 @@ if (location.pathname.endsWith("player.html")) {
             parts.forEach(fileName => createTrackCard(fileName));
         });
 
+    // ================================
+    // トラックカード生成（音量＋MUTE＋SOLO）
+    // ================================
     function createTrackCard(fileName) {
         const card = document.createElement("div");
         card.className = "track-card";
@@ -64,13 +70,20 @@ if (location.pathname.endsWith("player.html")) {
         const audio = new Audio(`tracks/${songName}/${fileName}`);
         audio.preload = "metadata";
 
+        // ---- duration を確実に取得 ----
         audio.addEventListener("loadedmetadata", updateDuration);
         audio.addEventListener("canplay", updateDuration);
         audio.addEventListener("durationchange", updateDuration);
 
+        // ---- 再生中にシークバー更新 ----
         audio.addEventListener("timeupdate", () => {
             if (!isSeeking && audioElements[0] === audio) {
                 seekBar.value = audio.currentTime;
+
+                // 進行バー更新
+                const percent = (audio.currentTime / audio.duration) * 100;
+                seekBar.style.setProperty("--value", percent + "%");
+
                 currentTimeLabel.textContent = formatTime(audio.currentTime);
             }
         });
@@ -79,14 +92,25 @@ if (location.pathname.endsWith("player.html")) {
         title.className = "track-title";
         title.textContent = fileName;
 
+        // ---- 音量スライダー ----
         const volume = document.createElement("input");
         volume.type = "range";
         volume.min = 0;
         volume.max = 1;
         volume.step = 0.01;
         volume.value = 1;
-        volume.oninput = () => audio.volume = volume.value;
 
+        // 初期状態の進行バー
+        volume.style.setProperty("--value", "100%");
+
+        volume.oninput = () => {
+            audio.volume = volume.value;
+
+            // 進行バー更新
+            volume.style.setProperty("--value", (volume.value * 100) + "%");
+        };
+
+        // ---- MUTE / SOLO ----
         const btnRow = document.createElement("div");
         btnRow.className = "btn-row";
 
@@ -121,6 +145,9 @@ if (location.pathname.endsWith("player.html")) {
         audioElements.push(audio);
     }
 
+    // ================================
+    // 全トラックの duration を見て最大値をセット
+    // ================================
     function updateDuration() {
         let maxDur = 0;
 
@@ -136,6 +163,9 @@ if (location.pathname.endsWith("player.html")) {
         }
     }
 
+    // ================================
+    // Play / Pause トグル
+    // ================================
     playBtn.onclick = () => {
         if (!isPlaying) {
             audioElements.forEach(a => {
@@ -151,37 +181,65 @@ if (location.pathname.endsWith("player.html")) {
         }
     };
 
+    // ================================
+    // 全体停止
+    // ================================
     stopBtn.onclick = () => {
         audioElements.forEach(a => {
             a.pause();
             a.currentTime = 0;
         });
         seekBar.value = 0;
+
+        // 進行バーリセット
+        seekBar.style.setProperty("--value", "0%");
+
         currentTimeLabel.textContent = "0:00";
         playBtn.textContent = "▶️";
         isPlaying = false;
     };
 
+    // ================================
+    // 10秒巻き戻し
+    // ================================
     rewindBtn.onclick = () => {
         if (audioElements.length === 0) return;
         const t = Math.max(0, audioElements[0].currentTime - 10);
         audioElements.forEach(a => a.currentTime = t);
+
         seekBar.value = t;
+        seekBar.style.setProperty("--value", (t / audioElements[0].duration * 100) + "%");
+
         currentTimeLabel.textContent = formatTime(t);
     };
 
+    // ================================
+    // 10秒早送り
+    // ================================
     forwardBtn.onclick = () => {
         if (audioElements.length === 0) return;
         const t = Math.min(audioElements[0].duration, audioElements[0].currentTime + 10);
         audioElements.forEach(a => a.currentTime = t);
+
         seekBar.value = t;
+        seekBar.style.setProperty("--value", (t / audioElements[0].duration * 100) + "%");
+
         currentTimeLabel.textContent = formatTime(t);
     };
 
+    // ================================
+    // シークバー操作
+    // ================================
     seekBar.addEventListener("input", () => {
         isSeeking = true;
         const t = Number(seekBar.value);
+
         audioElements.forEach(a => a.currentTime = t);
+
+        // 進行バー更新
+        const percent = (t / audioElements[0].duration) * 100;
+        seekBar.style.setProperty("--value", percent + "%");
+
         currentTimeLabel.textContent = formatTime(t);
     });
 
@@ -189,6 +247,9 @@ if (location.pathname.endsWith("player.html")) {
         isSeeking = false;
     });
 
+    // ================================
+    // 時間フォーマット
+    // ================================
     function formatTime(sec) {
         const m = Math.floor(sec / 60);
         const s = Math.floor(sec % 60);
