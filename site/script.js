@@ -45,6 +45,8 @@ if (location.pathname.endsWith("player.html")) {
     const stopBtn = document.getElementById("stop-all");
     const rewindBtn = document.getElementById("rewind");
     const forwardBtn = document.getElementById("forward");
+
+    // ← SVG の中身を書き換えるために取得
     const playIcon = document.getElementById("play-icon");
 
     let audioElements = [];
@@ -78,10 +80,12 @@ if (location.pathname.endsWith("player.html")) {
         audio.addEventListener("timeupdate", () => {
             if (!isSeeking && audioElements[0] === audio) {
                 seekBar.value = audio.currentTime;
+
                 if (!isNaN(audio.duration) && audio.duration > 0) {
                     const percent = (audio.currentTime / audio.duration) * 100;
                     seekBar.style.setProperty("--value", percent + "%");
                 }
+
                 currentTimeLabel.textContent = formatTime(audio.currentTime);
             }
         });
@@ -138,7 +142,7 @@ if (location.pathname.endsWith("player.html")) {
     }
 
     // ================================
-    // 全トラックの duration を見て最大値をセット
+    // duration 更新
     // ================================
     function updateDuration() {
         let maxDur = 0;
@@ -160,6 +164,7 @@ if (location.pathname.endsWith("player.html")) {
     // ================================
     playBtn.onclick = () => {
         if (!isPlaying) {
+            // 再生開始
             audioElements.forEach(a => {
                 a.currentTime = seekBar.value;
                 a.play();
@@ -173,7 +178,9 @@ if (location.pathname.endsWith("player.html")) {
             playIcon.setAttribute("fill", "#000");
 
             isPlaying = true;
+
         } else {
+            // 一時停止
             audioElements.forEach(a => a.pause());
 
             // ⏸ → ▶（SVG）
@@ -187,13 +194,14 @@ if (location.pathname.endsWith("player.html")) {
     };
 
     // ================================
-    // 全体停止
+    // 停止
     // ================================
     stopBtn.onclick = () => {
         audioElements.forEach(a => {
             a.pause();
             a.currentTime = 0;
         });
+
         seekBar.value = 0;
         seekBar.style.setProperty("--value", "0%");
         currentTimeLabel.textContent = "0:00";
@@ -203,16 +211,19 @@ if (location.pathname.endsWith("player.html")) {
           <polygon points="6,4 20,12 6,20"></polygon>
         `;
         playIcon.setAttribute("fill", "#000");
+
         isPlaying = false;
     };
 
     // ================================
-    // 10秒巻き戻し
+    // 巻き戻し 10s
     // ================================
     rewindBtn.onclick = () => {
         if (audioElements.length === 0) return;
+
         const base = audioElements[0];
         const t = Math.max(0, base.currentTime - 10);
+
         audioElements.forEach(a => a.currentTime = t);
 
         seekBar.value = t;
@@ -220,16 +231,19 @@ if (location.pathname.endsWith("player.html")) {
             const percent = (t / base.duration) * 100;
             seekBar.style.setProperty("--value", percent + "%");
         }
+
         currentTimeLabel.textContent = formatTime(t);
     };
 
     // ================================
-    // 10秒早送り
+    // 早送り 10s
     // ================================
     forwardBtn.onclick = () => {
         if (audioElements.length === 0) return;
+
         const base = audioElements[0];
         const t = Math.min(base.duration || 0, base.currentTime + 10);
+
         audioElements.forEach(a => a.currentTime = t);
 
         seekBar.value = t;
@@ -237,6 +251,7 @@ if (location.pathname.endsWith("player.html")) {
             const percent = (t / base.duration) * 100;
             seekBar.style.setProperty("--value", percent + "%");
         }
+
         currentTimeLabel.textContent = formatTime(t);
     };
 
@@ -245,6 +260,7 @@ if (location.pathname.endsWith("player.html")) {
     // ================================
     seekBar.addEventListener("input", () => {
         if (audioElements.length === 0) return;
+
         isSeeking = true;
         const t = Number(seekBar.value);
 
@@ -255,6 +271,7 @@ if (location.pathname.endsWith("player.html")) {
             const percent = (t / base.duration) * 100;
             seekBar.style.setProperty("--value", percent + "%");
         }
+
         currentTimeLabel.textContent = formatTime(t);
     });
 
