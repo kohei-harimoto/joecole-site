@@ -48,11 +48,8 @@ if (location.pathname.endsWith("player.html")) {
 
     let audioElements = [];
     let isSeeking = false;
-    let isPlaying = false; // ← Play/Pause 状態管理
+    let isPlaying = false;
 
-    // ================================
-    // tracks.json から mp3 のファイル名を取得
-    // ================================
     fetch("tracks/tracks.json")
         .then(res => res.json())
         .then(data => {
@@ -60,9 +57,6 @@ if (location.pathname.endsWith("player.html")) {
             parts.forEach(fileName => createTrackCard(fileName));
         });
 
-    // ================================
-    // トラックカード生成（音量＋MUTE＋SOLO）
-    // ================================
     function createTrackCard(fileName) {
         const card = document.createElement("div");
         card.className = "track-card";
@@ -70,12 +64,10 @@ if (location.pathname.endsWith("player.html")) {
         const audio = new Audio(`tracks/${songName}/${fileName}`);
         audio.preload = "metadata";
 
-        // ---- duration を確実に取得 ----
         audio.addEventListener("loadedmetadata", updateDuration);
         audio.addEventListener("canplay", updateDuration);
         audio.addEventListener("durationchange", updateDuration);
 
-        // ---- 再生中にシークバー更新 ----
         audio.addEventListener("timeupdate", () => {
             if (!isSeeking && audioElements[0] === audio) {
                 seekBar.value = audio.currentTime;
@@ -95,7 +87,6 @@ if (location.pathname.endsWith("player.html")) {
         volume.value = 1;
         volume.oninput = () => audio.volume = volume.value;
 
-        // ---- MUTE / SOLO ----
         const btnRow = document.createElement("div");
         btnRow.className = "btn-row";
 
@@ -130,9 +121,6 @@ if (location.pathname.endsWith("player.html")) {
         audioElements.push(audio);
     }
 
-    // ================================
-    // 全トラックの duration を見て最大値をセット
-    // ================================
     function updateDuration() {
         let maxDur = 0;
 
@@ -148,29 +136,21 @@ if (location.pathname.endsWith("player.html")) {
         }
     }
 
-    // ================================
-    // Play / Pause トグル
-    // ================================
     playBtn.onclick = () => {
         if (!isPlaying) {
-            // ---- 再生開始 ----
             audioElements.forEach(a => {
                 a.currentTime = seekBar.value;
                 a.play();
             });
-            playBtn.textContent = "⏸️"; // Pause 表示
+            playBtn.textContent = "⏸️";
             isPlaying = true;
         } else {
-            // ---- 一時停止 ----
             audioElements.forEach(a => a.pause());
-            playBtn.textContent = "▶️"; // Play 表示
+            playBtn.textContent = "▶️";
             isPlaying = false;
         }
     };
 
-    // ================================
-    // 全体停止
-    // ================================
     stopBtn.onclick = () => {
         audioElements.forEach(a => {
             a.pause();
@@ -182,9 +162,6 @@ if (location.pathname.endsWith("player.html")) {
         isPlaying = false;
     };
 
-    // ================================
-    // 10秒巻き戻し
-    // ================================
     rewindBtn.onclick = () => {
         if (audioElements.length === 0) return;
         const t = Math.max(0, audioElements[0].currentTime - 10);
@@ -193,9 +170,6 @@ if (location.pathname.endsWith("player.html")) {
         currentTimeLabel.textContent = formatTime(t);
     };
 
-    // ================================
-    // 10秒早送り
-    // ================================
     forwardBtn.onclick = () => {
         if (audioElements.length === 0) return;
         const t = Math.min(audioElements[0].duration, audioElements[0].currentTime + 10);
@@ -204,9 +178,6 @@ if (location.pathname.endsWith("player.html")) {
         currentTimeLabel.textContent = formatTime(t);
     };
 
-    // ================================
-    // シークバー操作
-    // ================================
     seekBar.addEventListener("input", () => {
         isSeeking = true;
         const t = Number(seekBar.value);
@@ -218,9 +189,6 @@ if (location.pathname.endsWith("player.html")) {
         isSeeking = false;
     });
 
-    // ================================
-    // 時間フォーマット
-    // ================================
     function formatTime(sec) {
         const m = Math.floor(sec / 60);
         const s = Math.floor(sec % 60);
