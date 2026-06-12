@@ -45,6 +45,7 @@ if (location.pathname.endsWith("player.html")) {
     const stopBtn = document.getElementById("stop-all");
     const rewindBtn = document.getElementById("rewind");
     const forwardBtn = document.getElementById("forward");
+    const playIcon = document.getElementById("play-icon");
 
     let audioElements = [];
     let isSeeking = false;
@@ -70,20 +71,17 @@ if (location.pathname.endsWith("player.html")) {
         const audio = new Audio(`tracks/${songName}/${fileName}`);
         audio.preload = "metadata";
 
-        // ---- duration を確実に取得 ----
         audio.addEventListener("loadedmetadata", updateDuration);
         audio.addEventListener("canplay", updateDuration);
         audio.addEventListener("durationchange", updateDuration);
 
-        // ---- 再生中にシークバー更新 ----
         audio.addEventListener("timeupdate", () => {
             if (!isSeeking && audioElements[0] === audio) {
                 seekBar.value = audio.currentTime;
-
-                // 進行バー更新
-                const percent = (audio.currentTime / audio.duration) * 100;
-                seekBar.style.setProperty("--value", percent + "%");
-
+                if (!isNaN(audio.duration) && audio.duration > 0) {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    seekBar.style.setProperty("--value", percent + "%");
+                }
                 currentTimeLabel.textContent = formatTime(audio.currentTime);
             }
         });
@@ -92,25 +90,19 @@ if (location.pathname.endsWith("player.html")) {
         title.className = "track-title";
         title.textContent = fileName;
 
-        // ---- 音量スライダー ----
         const volume = document.createElement("input");
         volume.type = "range";
         volume.min = 0;
         volume.max = 1;
         volume.step = 0.01;
         volume.value = 1;
-
-        // 初期状態の進行バー
         volume.style.setProperty("--value", "100%");
 
         volume.oninput = () => {
             audio.volume = volume.value;
-
-            // 進行バー更新
             volume.style.setProperty("--value", (volume.value * 100) + "%");
         };
 
-        // ---- MUTE / SOLO ----
         const btnRow = document.createElement("div");
         btnRow.className = "btn-row";
 
@@ -164,7 +156,7 @@ if (location.pathname.endsWith("player.html")) {
     }
 
     // ================================
-    // Play / Pause トグル
+    // Play / Pause トグル（SVG切替）
     // ================================
     playBtn.onclick = () => {
         if (!isPlaying) {
@@ -172,11 +164,24 @@ if (location.pathname.endsWith("player.html")) {
                 a.currentTime = seekBar.value;
                 a.play();
             });
-            playBtn.textContent = "⏸️";
+
+            // ▶ → ⏸（SVG）
+            playIcon.innerHTML = `
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            `;
+            playIcon.setAttribute("fill", "#000");
+
             isPlaying = true;
         } else {
             audioElements.forEach(a => a.pause());
-            playBtn.textContent = "▶️";
+
+            // ⏸ → ▶（SVG）
+            playIcon.innerHTML = `
+              <polygon points="6,4 20,12 6,20"></polygon>
+            `;
+            playIcon.setAttribute("fill", "#000");
+
             isPlaying = false;
         }
     };
@@ -190,12 +195,14 @@ if (location.pathname.endsWith("player.html")) {
             a.currentTime = 0;
         });
         seekBar.value = 0;
-
-        // 進行バーリセット
         seekBar.style.setProperty("--value", "0%");
-
         currentTimeLabel.textContent = "0:00";
-        playBtn.textContent = "▶️";
+
+        // 停止時は再生アイコンに戻す
+        playIcon.innerHTML = `
+          <polygon points="6,4 20,12 6,20"></polygon>
+        `;
+        playIcon.setAttribute("fill", "#000");
         isPlaying = false;
     };
 
@@ -204,12 +211,15 @@ if (location.pathname.endsWith("player.html")) {
     // ================================
     rewindBtn.onclick = () => {
         if (audioElements.length === 0) return;
-        const t = Math.max(0, audioElements[0].currentTime - 10);
+        const base = audioElements[0];
+        const t = Math.max(0, base.currentTime - 10);
         audioElements.forEach(a => a.currentTime = t);
 
         seekBar.value = t;
-        seekBar.style.setProperty("--value", (t / audioElements[0].duration * 100) + "%");
-
+        if (!isNaN(base.duration) && base.duration > 0) {
+            const percent = (t / base.duration) * 100;
+            seekBar.style.setProperty("--value", percent + "%");
+        }
         currentTimeLabel.textContent = formatTime(t);
     };
 
@@ -218,12 +228,15 @@ if (location.pathname.endsWith("player.html")) {
     // ================================
     forwardBtn.onclick = () => {
         if (audioElements.length === 0) return;
-        const t = Math.min(audioElements[0].duration, audioElements[0].currentTime + 10);
+        const base = audioElements[0];
+        const t = Math.min(base.duration || 0, base.currentTime + 10);
         audioElements.forEach(a => a.currentTime = t);
 
         seekBar.value = t;
-        seekBar.style.setProperty("--value", (t / audioElements[0].duration * 100) + "%");
-
+        if (!isNaN(base.duration) && base.duration > 0) {
+            const percent = (t / base.duration) * 100;
+            seekBar.style.setProperty("--value", percent + "%");
+        }
         currentTimeLabel.textContent = formatTime(t);
     };
 
@@ -231,15 +244,17 @@ if (location.pathname.endsWith("player.html")) {
     // シークバー操作
     // ================================
     seekBar.addEventListener("input", () => {
+        if (audioElements.length === 0) return;
         isSeeking = true;
         const t = Number(seekBar.value);
 
         audioElements.forEach(a => a.currentTime = t);
 
-        // 進行バー更新
-        const percent = (t / audioElements[0].duration) * 100;
-        seekBar.style.setProperty("--value", percent + "%");
-
+        const base = audioElements[0];
+        if (!isNaN(base.duration) && base.duration > 0) {
+            const percent = (t / base.duration) * 100;
+            seekBar.style.setProperty("--value", percent + "%");
+        }
         currentTimeLabel.textContent = formatTime(t);
     });
 
