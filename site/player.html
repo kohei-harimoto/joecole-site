@@ -30,14 +30,13 @@
       z-index: 1000;
     }
 
-    /* ---- フッター ---- */
     .footer {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
       background: rgba(10,10,10,0.92);
-      padding: 16px 22px; /* ← 右切れ対策で余白増やした */
+      padding: 16px 22px;
       border-top: 1px solid rgba(255,255,255,0.08);
       backdrop-filter: blur(18px);
       z-index: 1000;
@@ -70,7 +69,6 @@
       flex: 1;
     }
 
-    /* ---- ボタン（黒×金） ---- */
     .footer button {
       font-size: 16px;
       padding: 8px 14px;
@@ -83,8 +81,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px; /* ← SVG と文字の間 */
-      white-space: nowrap; /* ← 改行防止 */
+      gap: 6px;
+      white-space: nowrap;
     }
 
     .footer button:hover {
@@ -98,7 +96,6 @@
       border-color: #f5c400;
     }
 
-    /* ---- トラックカード ---- */
     .track-card {
       width: 90%;
       background: rgba(20,20,22,0.9);
@@ -122,7 +119,6 @@
       color: #f5f5f7;
     }
 
-    /* ---- スライダー ---- */
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
@@ -146,7 +142,6 @@
       margin-top: -6px;
     }
 
-    /* ---- MUTE / SOLO ---- */
     .btn-row {
       display: flex;
       gap: 10px;
@@ -175,7 +170,6 @@
       border-color: #f5c400;
     }
 
-    /* ---- シークバー時間 ---- */
     .seek-wrapper {
       width: 100%;
       text-align: center;
@@ -200,7 +194,7 @@
 
     <div class="footer-row">
 
-      <!-- 巻き戻し（10s 表示付き） -->
+      <!-- 巻き戻し（10s） -->
       <div class="footer-left">
         <button id="rewind">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="#f5f5f7">
@@ -211,10 +205,10 @@
         </button>
       </div>
 
-      <!-- 再生 / 停止 -->
+      <!-- 再生 / 停止（SVG切替） -->
       <div class="footer-center">
         <button id="play-all">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#000">
+          <svg id="play-icon" width="22" height="22" viewBox="0 0 24 24" fill="#000">
             <polygon points="6,4 20,12 6,20"/>
           </svg>
         </button>
@@ -226,14 +220,14 @@
         </button>
       </div>
 
-      <!-- 早送り（10s 表示付き） -->
+      <!-- 早送り（10s） -->
       <div class="footer-right">
         <button id="forward">
+          10s
           <svg width="22" height="22" viewBox="0 0 24 24" fill="#f5f5f7">
             <polygon points="4,4 13,12 4,20"/>
             <polygon points="11,4 20,12 11,20"/>
           </svg>
-          10s
         </button>
       </div>
 
