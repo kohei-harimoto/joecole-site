@@ -15,18 +15,19 @@
       padding-bottom: 40px;
     }
 
-    /* ---- ヘッダー ---- */
+    /* ---- ヘッダー（黒×ゴールドで強調） ---- */
     .header {
       position: sticky;
       top: 0;
-      background: #0d0d0d;
+      background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
       color: #f5f5f7;
-      padding: 16px;
+      padding: 18px;
       text-align: center;
       font-size: 22px;
       font-weight: 700;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 2px solid #f5c400; /* ゴールドライン */
       z-index: 100;
+      letter-spacing: 0.03em;
     }
 
     /* ---- 曲カード ---- */
@@ -61,7 +62,6 @@
       letter-spacing: 0.02em;
     }
 
-    /* → アイコン（右側の > ） */
     .arrow {
       font-size: 18px;
       color: #f5c400;
@@ -82,7 +82,35 @@
       .then(data => {
         const list = document.getElementById("song-list");
 
-        Object.keys(data.songs).forEach(song => {
+        const songs = Object.keys(data.songs);
+
+        // ============================
+        // ソート仕様（あなたの要望通り）
+        // 1. 日付付きは新しい順で上
+        // 2. 日付なし（原曲など）は下
+        // 3. 日付なし同士は tracks.json の順番を維持
+        // ============================
+        const sorted = songs.sort((a, b) => {
+          const dateA = a.match(/^\d{8}/);
+          const dateB = b.match(/^\d{8}/);
+
+          // 日付あり同士 → 新しい日付が上
+          if (dateA && dateB) {
+            return Number(dateB[0]) - Number(dateA[0]);
+          }
+
+          // 片方だけ日付あり → 日付ありが上
+          if (dateA) return -1;
+          if (dateB) return 1;
+
+          // 両方日付なし → tracks.json の順番を維持
+          return 0;
+        });
+
+        // ============================
+        // カード生成
+        // ============================
+        sorted.forEach(song => {
           const card = document.createElement("div");
           card.className = "song-card";
           card.onclick = () => {
