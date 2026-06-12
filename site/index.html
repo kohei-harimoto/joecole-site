@@ -15,7 +15,7 @@
       padding-bottom: 40px;
     }
 
-    /* ---- ヘッダー（黒×ゴールドで強調） ---- */
+    /* ---- ヘッダー ---- */
     .header {
       position: sticky;
       top: 0;
@@ -25,9 +25,48 @@
       text-align: center;
       font-size: 22px;
       font-weight: 700;
-      border-bottom: 2px solid #f5c400; /* ゴールドライン */
-      z-index: 100;
+      border-bottom: 2px solid #f5c400;
+      z-index: 200;
       letter-spacing: 0.03em;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ---- 検索アイコン ---- */
+    .search-icon {
+      cursor: pointer;
+      padding-right: 6px;
+      transition: 0.2s ease;
+    }
+    .search-icon:hover { opacity: 0.7; }
+
+    /* ---- 検索バー（横に伸びる） ---- */
+    .search-bar-wrapper {
+      width: 0;
+      overflow: hidden;
+      transition: width 0.25s ease;
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      margin-right: 10px;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #f5c400;
+      background: #111;
+      color: #f5f5f7;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .close-search {
+      margin-left: 8px;
+      cursor: pointer;
     }
 
     /* ---- 曲カード ---- */
@@ -46,6 +85,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: relative;
     }
 
     .song-card:hover {
@@ -67,65 +107,163 @@
       color: #f5c400;
       opacity: 0.9;
     }
+
+    /* ---- ピンアイコン ---- */
+    .pin {
+      position: absolute;
+      top: 8px;
+      right: 36px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
   </style>
 </head>
 
 <body>
 
-  <div class="header">JoeColeの曲一覧</div>
+  <div class="header">
+    <div>JoeColeの曲一覧</div>
+
+    <!-- 検索バー（閉じた状態） -->
+    <div class="search-bar-wrapper" id="search-wrapper">
+      <input type="text" id="search-input" class="search-bar" placeholder="検索...">
+
+      <!-- ✕ SVG -->
+      <div class="close-search" id="close-search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#f5c400">
+          <line x1="4" y1="4" x2="20" y2="20" stroke="#f5c400" stroke-width="2"/>
+          <line x1="20" y1="4" x2="4" y2="20" stroke="#f5c400" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 検索アイコン（SVG） -->
+    <div class="search-icon" id="open-search">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#f5c400">
+        <circle cx="11" cy="11" r="7" stroke="#f5c400" stroke-width="2" fill="none"/>
+        <line x1="16" y1="16" x2="21" y2="21" stroke="#f5c400" stroke-width="2"/>
+      </svg>
+    </div>
+  </div>
 
   <div id="song-list"></div>
 
   <script>
+    const searchWrapper = document.getElementById("search-wrapper");
+    const searchInput = document.getElementById("search-input");
+    const openSearch = document.getElementById("open-search");
+    const closeSearch = document.getElementById("close-search");
+
+    /* ---- 検索バー開閉 ---- */
+    openSearch.onclick = () => {
+      searchWrapper.style.width = "70%";
+      searchInput.focus();
+    };
+
+    closeSearch.onclick = () => {
+      searchWrapper.style.width = "0";
+      searchInput.value = "";
+      filterSongs("");
+    };
+
+    /* ---- ピン留め保存 ---- */
+    const pinned = JSON.parse(localStorage.getItem("pinnedSongs") || "[]");
+
+    function getPinSVG(active) {
+      if (active) {
+        return `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#f5c400">
+            <path d="M14 2l-1 1v6l-2 2v3l-3 3 1 1 3-3h3l2-2h6l1-1z"/>
+          </svg>
+        `;
+      } else {
+        return `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#666">
+            <path d="M14 2l-1 1v6l-2 2v3l-3 3 1 1 3-3h3l2-2h6l1-1z"/>
+          </svg>
+        `;
+      }
+    }
+
+    function togglePin(song) {
+      const index = pinned.indexOf(song);
+      if (index >= 0) pinned.splice(index, 1);
+      else pinned.push(song);
+
+      localStorage.setItem("pinnedSongs", JSON.stringify(pinned));
+      renderSongs();
+    }
+
+    /* ---- 曲一覧取得 ---- */
+    let allSongs = [];
+
     fetch("tracks/tracks.json")
       .then(res => res.json())
       .then(data => {
-        const list = document.getElementById("song-list");
+        allSongs = Object.keys(data.songs);
+        renderSongs();
+      });
 
-        const songs = Object.keys(data.songs);
+    /* ---- ソート + ピン留め + 検索 ---- */
+    function renderSongs(filter = "") {
+      const list = document.getElementById("song-list");
+      list.innerHTML = "";
 
-        // ============================
-        // ソート仕様（あなたの要望通り）
-        // 1. 日付付きは新しい順で上
-        // 2. 日付なし（原曲など）は下
-        // 3. 日付なし同士は tracks.json の順番を維持
-        // ============================
-        const sorted = songs.sort((a, b) => {
-          const dateA = a.match(/^\d{8}/);
-          const dateB = b.match(/^\d{8}/);
+      const filtered = allSongs.filter(song =>
+        song.toLowerCase().includes(filter.toLowerCase())
+      );
 
-          // 日付あり同士 → 新しい日付が上
-          if (dateA && dateB) {
-            return Number(dateB[0]) - Number(dateA[0]);
-          }
+      const sorted = filtered.sort((a, b) => {
+        const aPinned = pinned.includes(a);
+        const bPinned = pinned.includes(b);
 
-          // 片方だけ日付あり → 日付ありが上
-          if (dateA) return -1;
-          if (dateB) return 1;
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
 
-          // 両方日付なし → tracks.json の順番を維持
-          return 0;
-        });
+        const dateA = a.match(/^\d{8}/);
+        const dateB = b.match(/^\d{8}/);
 
-        // ============================
-        // カード生成
-        // ============================
-        sorted.forEach(song => {
-          const card = document.createElement("div");
-          card.className = "song-card";
-          card.onclick = () => {
-            location.href = `player.html?song=${song}`;
-          };
+        if (dateA && dateB) return Number(dateB[0]) - Number(dateA[0]);
+        if (dateA) return -1;
+        if (dateB) return 1;
 
-          card.innerHTML = `
-            <div class="song-title">${song}</div>
-            <div class="arrow">›</div>
-          `;
+        return 0;
+      });
 
-          list.appendChild(card);
-        });
-      })
-      .catch(err => console.error("tracks.json 読み込みエラー:", err));
+      sorted.forEach(song => {
+        const card = document.createElement("div");
+        card.className = "song-card";
+
+        card.onclick = () => {
+          location.href = `player.html?song=${song}`;
+        };
+
+        const pin = document.createElement("div");
+        pin.className = "pin";
+        pin.innerHTML = getPinSVG(pinned.includes(song));
+
+        pin.onclick = (e) => {
+          e.stopPropagation();
+          togglePin(song);
+        };
+
+        card.innerHTML = `
+          <div class="song-title">${song}</div>
+          <div class="arrow">›</div>
+        `;
+
+        card.appendChild(pin);
+        list.appendChild(card);
+      });
+    }
+
+    searchInput.addEventListener("input", () => {
+      filterSongs(searchInput.value);
+    });
+
+    function filterSongs(text) {
+      renderSongs(text);
+    }
   </script>
 
 </body>
