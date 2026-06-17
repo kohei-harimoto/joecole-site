@@ -60,15 +60,16 @@
       border-radius: 8px;
     }
 
-    /* REC（通常） */
-    #rec-btn.rec-off {
+    /* REC（常に丸・border固定） */
+    #rec-btn {
       background: #f53b3b;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: 2px solid transparent;
+      border: 2px solid transparent; /* ← 形が変わらない */
       font-size: 14px;
       font-weight: 600;
+      transition: 0.15s ease;
     }
 
     /* REC（録音中 → ゴールド縁） */
@@ -77,15 +78,16 @@
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
 
-    /* STOP（通常） */
-    #stop-btn.stop-off {
+    /* STOP（常に丸・border固定） */
+    #stop-btn {
       background: #444;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: 2px solid transparent;
+      border: 2px solid transparent; /* ← 形が変わらない */
       font-size: 14px;
       font-weight: 600;
+      transition: 0.15s ease;
     }
 
     /* STOP（停止中 → ゴールド縁） */
