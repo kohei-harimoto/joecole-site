@@ -30,6 +30,70 @@
       z-index: 1000;
     }
 
+    /* ▼▼▼ 追加：録音パネル ▼▼▼ */
+    #record-panel {
+      position: fixed;
+      top: 60px; /* header の高さ */
+      left: 0;
+      width: 100%;
+      background: #0d0d0d;
+      color: #f5f5f7;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      z-index: 950;
+      box-sizing: border-box;
+    }
+
+    #record-panel .bpm-row,
+    #record-panel .rec-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    #bpm-input {
+      width: 80px;
+      padding: 6px;
+      font-size: 16px;
+      background: #1a1a1a;
+      border: 1px solid rgba(245,196,0,0.4);
+      color: #f5f5f7;
+      border-radius: 8px;
+    }
+
+    #rec-btn {
+      background: #f53b3b;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    #stop-btn {
+      background: #444;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    #rec-status {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    /* ▲▲▲ 追加：録音パネル ▲▲▲ */
+
+    /* ▼▼▼ トラックカードの位置調整 ▼▼▼ */
+    #tracks-container {
+      margin-top: 150px; /* header + record-panel の高さ */
+    }
+    /* ▲▲▲ */
+
     .footer {
       position: fixed;
       bottom: 0;
@@ -113,12 +177,6 @@
       margin-top: 80px;
     }
 
-    .track-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #f5f5f7;
-    }
-
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
@@ -188,13 +246,28 @@
 
   <div class="header" id="song-title"></div>
 
+  <!-- ▼▼▼ 追加：録音UI ▼▼▼ -->
+  <div id="record-panel">
+    <div class="bpm-row">
+      <label>BPM:</label>
+      <input id="bpm-input" type="number" value="120">
+    </div>
+
+    <div class="rec-row">
+      <button id="rec-btn">● REC</button>
+      <button id="stop-btn">■ STOP</button>
+    </div>
+
+    <div id="rec-status">Status: Stopped</div>
+  </div>
+  <!-- ▲▲▲ -->
+
   <div id="tracks-container"></div>
 
   <div class="footer">
 
     <div class="footer-row">
 
-      <!-- 巻き戻し（10s） -->
       <div class="footer-left">
         <button id="rewind">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="#f5f5f7">
@@ -205,7 +278,6 @@
         </button>
       </div>
 
-      <!-- 再生 / 停止（SVG切替） -->
       <div class="footer-center">
         <button id="play-all">
           <svg id="play-icon" width="22" height="22" viewBox="0 0 24 24" fill="#000">
@@ -220,7 +292,6 @@
         </button>
       </div>
 
-      <!-- 早送り（10s） -->
       <div class="footer-right">
         <button id="forward">
           10s
