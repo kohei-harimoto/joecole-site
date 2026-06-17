@@ -30,7 +30,7 @@
       z-index: 1000;
     }
 
-    /* ▼▼▼ 録音パネル（横並び・ゴールド縁） ▼▼▼ */
+    /* ▼▼▼ 録音パネル ▼▼▼ */
     #record-panel {
       position: fixed;
       top: 60px;
@@ -60,48 +60,61 @@
       border-radius: 8px;
     }
 
-    /* REC（常に丸・border固定） */
+    /* REC */
     #rec-btn {
       background: #f53b3b;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: 2px solid transparent; /* ← 形が変わらない */
+      border: 2px solid transparent;
       font-size: 14px;
       font-weight: 600;
       transition: 0.15s ease;
     }
 
-    /* REC（録音中 → ゴールド縁） */
     #rec-btn.rec-on {
       border-color: #f5c400;
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
 
-    /* STOP（常に丸・border固定） */
+    /* STOP */
     #stop-btn {
       background: #444;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: 2px solid transparent; /* ← 形が変わらない */
+      border: 2px solid transparent;
       font-size: 14px;
       font-weight: 600;
       transition: 0.15s ease;
     }
 
-    /* STOP（停止中 → ゴールド縁） */
     #stop-btn.stop-on {
       border-color: #f5c400;
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
-    /* ▲▲▲ 録音パネル ▲▲▲ */
 
-    /* ▼▼▼ トラックカードの位置調整 ▼▼▼ */
-    #tracks-container {
-      margin-top: 150px; /* header + record-panel の高さ */
+    /* ▼ ANALYZE（専用CSS・他UIに干渉しない） ▼ */
+    #analyze-btn {
+      background: #1a1a1a;
+      color: #f5f5f7;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 700;
+      transition: 0.15s ease;
     }
-    /* ▲▲▲ */
+
+    #analyze-btn.ready {
+      border-color: #f5c400;
+      box-shadow: 0 0 10px rgba(245,196,0,0.6);
+    }
+    /* ▲ ANALYZE ▲ */
+
+    #tracks-container {
+      margin-top: 150px;
+    }
 
     .footer {
       position: fixed;
@@ -156,11 +169,6 @@
       justify-content: center;
       gap: 6px;
       white-space: nowrap;
-    }
-
-    .footer button:hover {
-      background: #2a2a2a;
-      border-color: rgba(245,196,0,0.9);
     }
 
     #play-all {
@@ -255,7 +263,7 @@
 
   <div class="header" id="song-title"></div>
 
-  <!-- ▼▼▼ 録音UI（横並び・ゴールド縁） ▼▼▼ -->
+  <!-- ▼▼▼ 録音UI ▼▼▼ -->
   <div id="record-panel">
     <div class="record-row">
       <label>BPM:</label>
@@ -263,6 +271,9 @@
 
       <button id="rec-btn" class="rec-off">● REC</button>
       <button id="stop-btn" class="stop-off">■ STOP</button>
+
+      <!-- ★ ANALYZE 追加 -->
+      <button id="analyze-btn">ANALYZE</button>
     </div>
   </div>
   <!-- ▲▲▲ -->
