@@ -46,8 +46,12 @@ if (location.pathname.endsWith("player.html")) {
     const rewindBtn = document.getElementById("rewind");
     const forwardBtn = document.getElementById("forward");
 
-    // ← SVG の中身を書き換えるために取得
     const playIcon = document.getElementById("play-icon");
+
+    // ▼▼▼ 追加：録音UIのボタン ▼▼▼
+    const recBtn = document.getElementById("rec-btn");
+    const stopRecBtn = document.getElementById("stop-btn");
+    // ▲▲▲
 
     let audioElements = [];
     let isSeeking = false;
@@ -64,7 +68,7 @@ if (location.pathname.endsWith("player.html")) {
         });
 
     // ================================
-    // トラックカード生成（音量＋MUTE＋SOLO）
+    // トラックカード生成
     // ================================
     function createTrackCard(fileName) {
         const card = document.createElement("div");
@@ -160,17 +164,15 @@ if (location.pathname.endsWith("player.html")) {
     }
 
     // ================================
-    // Play / Pause トグル（SVG切替）
+    // Play / Pause トグル
     // ================================
     playBtn.onclick = () => {
         if (!isPlaying) {
-            // 再生開始
             audioElements.forEach(a => {
                 a.currentTime = seekBar.value;
                 a.play();
             });
 
-            // ▶ → ⏸（SVG）
             playIcon.innerHTML = `
               <rect x="6" y="4" width="4" height="16"></rect>
               <rect x="14" y="4" width="4" height="16"></rect>
@@ -180,10 +182,8 @@ if (location.pathname.endsWith("player.html")) {
             isPlaying = true;
 
         } else {
-            // 一時停止
             audioElements.forEach(a => a.pause());
 
-            // ⏸ → ▶（SVG）
             playIcon.innerHTML = `
               <polygon points="6,4 20,12 6,20"></polygon>
             `;
@@ -206,7 +206,6 @@ if (location.pathname.endsWith("player.html")) {
         seekBar.style.setProperty("--value", "0%");
         currentTimeLabel.textContent = "0:00";
 
-        // 停止時は再生アイコンに戻す
         playIcon.innerHTML = `
           <polygon points="6,4 20,12 6,20"></polygon>
         `;
@@ -228,63 +227,4 @@ if (location.pathname.endsWith("player.html")) {
 
         seekBar.value = t;
         if (!isNaN(base.duration) && base.duration > 0) {
-            const percent = (t / base.duration) * 100;
-            seekBar.style.setProperty("--value", percent + "%");
-        }
-
-        currentTimeLabel.textContent = formatTime(t);
-    };
-
-    // ================================
-    // 早送り 10s
-    // ================================
-    forwardBtn.onclick = () => {
-        if (audioElements.length === 0) return;
-
-        const base = audioElements[0];
-        const t = Math.min(base.duration || 0, base.currentTime + 10);
-
-        audioElements.forEach(a => a.currentTime = t);
-
-        seekBar.value = t;
-        if (!isNaN(base.duration) && base.duration > 0) {
-            const percent = (t / base.duration) * 100;
-            seekBar.style.setProperty("--value", percent + "%");
-        }
-
-        currentTimeLabel.textContent = formatTime(t);
-    };
-
-    // ================================
-    // シークバー操作
-    // ================================
-    seekBar.addEventListener("input", () => {
-        if (audioElements.length === 0) return;
-
-        isSeeking = true;
-        const t = Number(seekBar.value);
-
-        audioElements.forEach(a => a.currentTime = t);
-
-        const base = audioElements[0];
-        if (!isNaN(base.duration) && base.duration > 0) {
-            const percent = (t / base.duration) * 100;
-            seekBar.style.setProperty("--value", percent + "%");
-        }
-
-        currentTimeLabel.textContent = formatTime(t);
-    });
-
-    seekBar.addEventListener("change", () => {
-        isSeeking = false;
-    });
-
-    // ================================
-    // 時間フォーマット
-    // ================================
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return `${m}:${s.toString().padStart(2, "0")}`;
-    }
-}
+            const
