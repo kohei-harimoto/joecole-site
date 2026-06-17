@@ -242,6 +242,27 @@
   color: #000 !important;
   border-color: #f5c400 !important;
 }
+/* ▼ MUTE / SOLO のサイズを強制的に戻す ▼ */
+.btn-row button {
+  padding: 10px 0 !important;     /* ← 高さを戻す */
+  font-size: 14px !important;     /* ← 文字サイズを戻す */
+  border-radius: 999px !important;
+  min-height: 34px !important;    /* ← ボタンの高さを固定 */
+  line-height: 1 !important;
+}
+
+/* MUTE ON */
+.btn-row button.active {
+  background: #ff3b30 !important;
+  border-color: #ff6b60 !important;
+}
+
+/* SOLO ON */
+.btn-row button.solo-active {
+  background: #f5c400 !important;
+  color: #000 !important;
+  border-color: #f5c400 !important;
+}
 
   </style>
 </head>
