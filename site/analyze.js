@@ -14,7 +14,7 @@ const rewindBtn = document.getElementById("rewind-btn");
 const forwardBtn = document.getElementById("forward-btn");
 
 const bpmInput = document.getElementById("bpm-input");
-const metroBtn = document.getElementById("metro-btn");
+const metroLabel = document.getElementById("metro-label");
 
 const attackList = document.getElementById("attack-list");
 const backBtn = document.getElementById("back-btn");
@@ -60,7 +60,7 @@ async function initAudio(blob) {
 }
 
 // ================================
-// 再生 / 一時停止
+// 再生 / 一時停止（SVG 切り替え）
 // ================================
 playBtn.onclick = () => {
     const icon = document.getElementById("play-icon");
@@ -84,14 +84,19 @@ playBtn.onclick = () => {
     }
 };
 
-
 // ================================
 // 停止
 // ================================
 stopBtn.onclick = () => {
     audio.pause();
     audio.currentTime = 0;
-    playBtn.textContent = "▶";
+
+    const icon = document.getElementById("play-icon");
+    icon.innerHTML = `
+      <polygon points="6,4 20,12 6,20"></polygon>
+    `;
+    icon.setAttribute("fill", "#000");
+
     isPlaying = false;
 };
 
@@ -107,7 +112,7 @@ forwardBtn.onclick = () => {
 };
 
 // ================================
-// メトロノーム
+// メトロノーム（文字だけで ON/OFF）
 // ================================
 function playClick() {
     const ctx = new AudioContext();
@@ -122,11 +127,13 @@ function playClick() {
     osc.stop(ctx.currentTime + 0.05);
 }
 
-metroBtn.onclick = () => {
+metroLabel.onclick = () => {
     if (metroTimer) {
         clearInterval(metroTimer);
         metroTimer = null;
-        metroBtn.textContent = "メトロノーム ON";
+
+        metroLabel.classList.remove("metro-on");
+        metroLabel.classList.add("metro-off");
         return;
     }
 
@@ -136,7 +143,8 @@ metroBtn.onclick = () => {
     playClick();
     metroTimer = setInterval(playClick, interval);
 
-    metroBtn.textContent = "メトロノーム OFF";
+    metroLabel.classList.remove("metro-off");
+    metroLabel.classList.add("metro-on");
 };
 
 // ================================
