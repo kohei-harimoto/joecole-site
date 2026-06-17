@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>解析画面</title>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #f5f5f7;
+      padding-bottom: 160px;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #0d0d0d;
+      padding: 14px 16px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      z-index: 1000;
+    }
+
+    .content {
+      margin-top: 80px;
+      padding: 20px;
+    }
+
+    /* 波形エリア */
+    #waveform {
+      width: 100%;
+      height: 160px;
+      background: #111;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 20px;
+    }
+
+    /* 再生UI */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .controls button {
+      font-size: 16px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(245,196,0,0.4);
+      background: #1a1a1a;
+      color: #f5f5f7;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #play-btn {
+      background: #f5c400;
+      color: #000;
+      border-color: #f5c400;
+    }
+
+    /* メトロノーム */
+    .metronome-box {
+      margin-top: 20px;
+      padding: 14px;
+      background: rgba(20,20,22,0.9);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .metronome-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #bpm-input {
+      width: 80px;
+      padding: 6px;
+      font-size: 16px;
+      background: #1a1a1a;
+      border: 1px solid rgba(245,196,0,0.4);
+      color: #f5f5f7;
+      border-radius: 8px;
+    }
+
+    /* 色分けリスト */
+    .attack-list {
+      margin-top: 20px;
+      padding: 14px;
+      background: rgba(20,20,22,0.9);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .attack-item {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .fast { color: #ff3b30; } /* 早い → 赤 */
+    .slow { color: #4da3ff; } /* 遅い → 青 */
+    .good { color: #4cd964; } /* ±5ms → 緑 */
+
+    /* 戻るボタン */
+    #back-btn {
+      margin-top: 30px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 999px;
+      background: #1a1a1a;
+      border: 1px solid rgba(245,196,0,0.4);
+      color: #f5f5f7;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header" id="song-title">解析画面</div>
+
+  <div class="content">
+
+    <!-- 波形表示 -->
+    <canvas id="waveform"></canvas>
+
+    <!-- 再生UI -->
+    <div class="controls">
+      <button id="rewind-btn">? 10s</button>
+      <button id="play-btn">?</button>
+      <button id="stop-btn">■</button>
+      <button id="forward-btn">10s ?</button>
+    </div>
+
+    <!-- メトロノーム -->
+    <div class="metronome-box">
+      <div class="metronome-row">
+        <label>BPM:</label>
+        <input id="bpm-input" type="number" value="120">
+        <button id="metro-btn">メトロノーム ON</button>
+      </div>
+    </div>
+
+    <!-- 色分けリスト -->
+    <div class="attack-list" id="attack-list">
+      <div class="attack-item good">解析結果はここに表示されます</div>
+    </div>
+
+    <!-- 戻る -->
+    <button id="back-btn">← プレイヤーに戻る</button>
+
+  </div>
+
+  <script src="analyze.js"></script>
+
+</body>
+</html>
