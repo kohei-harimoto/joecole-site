@@ -1,5 +1,5 @@
 // ================================
-// analyze.html
+// analyze.html（録音解析画面）
 // ================================
 
 // 曲名取得
@@ -7,28 +7,7 @@ const params = new URLSearchParams(location.search);
 const songName = params.get("song");
 document.getElementById("song-title").textContent = `${songName} の解析`;
 
-// Base64 録音データ取得
-const base64 = params.get("rec");
-if (!base64) {
-    alert("録音データがありません");
-}
-
-// Base64 → Blob
-function base64ToBlob(base64) {
-    const bin = atob(base64);
-    const len = bin.length;
-    const buffer = new Uint8Array(len);
-    for (let i = 0; i < len; i++) buffer[i] = bin.charCodeAt(i);
-    return new Blob([buffer], { type: "audio/webm" });
-}
-
-const blob = base64ToBlob(base64);
-const audioURL = URL.createObjectURL(blob);
-const audio = new Audio(audioURL);
-
-// ================================
 // UI 要素
-// ================================
 const playBtn = document.getElementById("play-btn");
 const stopBtn = document.getElementById("stop-btn");
 const rewindBtn = document.getElementById("rewind-btn");
@@ -40,11 +19,48 @@ const metroBtn = document.getElementById("metro-btn");
 const attackList = document.getElementById("attack-list");
 const backBtn = document.getElementById("back-btn");
 
+let audio;              // 再生用 Audio
+let audioBuffer;        // 波形解析用
 let isPlaying = false;
 let metroTimer = null;
 
 // ================================
-// 再生 / 停止
+// IndexedDB から録音データを取得
+// ================================
+const DB_NAME = "recordDB";
+const STORE_NAME = "records";
+
+function loadFromIndexedDB() {
+    return new Promise(resolve => {
+        const request = indexedDB.open(DB_NAME, 1);
+
+        request.onsuccess = e => {
+            const db = e.target.result;
+            const tx = db.transaction(STORE_NAME, "readonly");
+            const store = tx.objectStore(STORE_NAME);
+            const getReq = store.get("recordedAudio");
+
+            getReq.onsuccess = () => resolve(getReq.result);
+        };
+    });
+}
+
+// ================================
+// Blob → Audio / AudioBuffer に変換
+// ================================
+async function initAudio(blob) {
+    // 再生用
+    const url = URL.createObjectURL(blob);
+    audio = new Audio(url);
+
+    // 解析用
+    const ctx = new AudioContext();
+    const arrayBuffer = await blob.arrayBuffer();
+    audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+}
+
+// ================================
+// 再生 / 一時停止
 // ================================
 playBtn.onclick = () => {
     if (!isPlaying) {
@@ -58,6 +74,9 @@ playBtn.onclick = () => {
     }
 };
 
+// ================================
+// 停止
+// ================================
 stopBtn.onclick = () => {
     audio.pause();
     audio.currentTime = 0;
@@ -103,20 +122,39 @@ metroBtn.onclick = () => {
     const bpm = Number(bpmInput.value);
     const interval = (60 / bpm) * 1000;
 
-    playClick(); // 最初のクリック
+    playClick();
     metroTimer = setInterval(playClick, interval);
 
     metroBtn.textContent = "メトロノーム OFF";
 };
 
 // ================================
+// 波形描画
+// ================================
+async function drawWaveform() {
+    const canvas = document.getElementById("waveform");
+    const ctx2d = canvas.getContext("2d");
+
+    const data = audioBuffer.getChannelData(0);
+    const step = Math.floor(data.length / canvas.width);
+
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+    ctx2d.strokeStyle = "#f5c400";
+    ctx2d.beginPath();
+
+    for (let i = 0; i < canvas.width; i++) {
+        const v = data[i * step];
+        const y = (1 - v) * canvas.height / 2;
+        ctx2d.lineTo(i, y);
+    }
+
+    ctx2d.stroke();
+}
+
+// ================================
 // アタック検出（簡易版）
 // ================================
-async function detectAttacks() {
-    const ctx = new AudioContext();
-    const arrayBuffer = await blob.arrayBuffer();
-    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-
+function detectAttacks() {
     const data = audioBuffer.getChannelData(0);
     const sampleRate = audioBuffer.sampleRate;
 
@@ -125,8 +163,7 @@ async function detectAttacks() {
 
     for (let i = 1; i < data.length; i++) {
         if (data[i] > threshold && data[i - 1] <= threshold) {
-            const time = i / sampleRate;
-            attacks.push(time);
+            attacks.push(i / sampleRate);
         }
     }
 
@@ -144,7 +181,7 @@ function analyzeTiming(attacks) {
 
     attacks.forEach(t => {
         const nearestBeat = Math.round(t / beatInterval) * beatInterval;
-        const diff = Math.round((t - nearestBeat) * 1000); // ms
+        const diff = Math.round((t - nearestBeat) * 1000);
 
         const item = document.createElement("div");
         item.className = "attack-item";
@@ -163,39 +200,19 @@ function analyzeTiming(attacks) {
 }
 
 // ================================
-// 波形描画
-// ================================
-async function drawWaveform() {
-    const canvas = document.getElementById("waveform");
-    const ctx2d = canvas.getContext("2d");
-
-    const ctx = new AudioContext();
-    const arrayBuffer = await blob.arrayBuffer();
-    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-
-    const data = audioBuffer.getChannelData(0);
-    const step = Math.floor(data.length / canvas.width);
-
-    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
-    ctx2d.strokeStyle = "#f5c400";
-    ctx2d.beginPath();
-
-    for (let i = 0; i < canvas.width; i++) {
-        const min = data[i * step];
-        const y = (1 - min) * canvas.height / 2;
-        ctx2d.lineTo(i, y);
-    }
-
-    ctx2d.stroke();
-}
-
-// ================================
 // 初期化
 // ================================
 (async () => {
+    const blob = await loadFromIndexedDB();
+    if (!blob) {
+        alert("録音データが見つかりません");
+        return;
+    }
+
+    await initAudio(blob);
     await drawWaveform();
 
-    const attacks = await detectAttacks();
+    const attacks = detectAttacks();
     analyzeTiming(attacks);
 })();
 
