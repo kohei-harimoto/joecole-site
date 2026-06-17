@@ -48,26 +48,26 @@ if (location.pathname.endsWith("player.html")) {
 
     const playIcon = document.getElementById("play-icon");
 
-    // ▼ 録音UI（UIだけ・録音処理はまだ）
+    // ▼ 録音UI
     const recBtn = document.getElementById("rec-btn");
     const stopRecBtn = document.getElementById("stop-btn");
+    const analyzeBtn = document.getElementById("analyze-btn");
 
     recBtn.onclick = () => {
-        recBtn.classList.remove("rec-off");
         recBtn.classList.add("rec-on");
-
         stopRecBtn.classList.remove("stop-on");
-        stopRecBtn.classList.add("stop-off");
+
+        analyzeBtn.classList.remove("analyze-ready");
+        analyzeBtn.classList.add("analyze-hidden");
     };
 
     stopRecBtn.onclick = () => {
-        stopRecBtn.classList.remove("stop-off");
         stopRecBtn.classList.add("stop-on");
-
         recBtn.classList.remove("rec-on");
-        recBtn.classList.add("rec-off");
+
+        analyzeBtn.classList.remove("analyze-hidden");
+        analyzeBtn.classList.add("analyze-ready");
     };
-    // ▲ 録音UI
 
     let audioElements = [];
     let isSeeking = false;
@@ -283,25 +283,4 @@ if (location.pathname.endsWith("player.html")) {
 
         audioElements.forEach(a => a.currentTime = t);
 
-        const base = audioElements[0];
-        if (!isNaN(base.duration) && base.duration > 0) {
-            const percent = (t / base.duration) * 100;
-            seekBar.style.setProperty("--value", percent + "%");
-        }
-
-        currentTimeLabel.textContent = formatTime(t);
-    });
-
-    seekBar.addEventListener("change", () => {
-        isSeeking = false;
-    });
-
-    // ================================
-    // 時間フォーマット
-    // ================================
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return `${m}:${s.toString().padStart(2, "0")}`;
-    }
-}
+        const base = audioElements[
