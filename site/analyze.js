@@ -14,13 +14,14 @@ const rewindBtn = document.getElementById("rewind-btn");
 const forwardBtn = document.getElementById("forward-btn");
 
 const bpmInput = document.getElementById("bpm-input");
-const metroLabel = document.getElementById("metro-label");
-
 const attackList = document.getElementById("attack-list");
 const backBtn = document.getElementById("back-btn");
 
-let audio;              // 再生用 Audio
-let audioBuffer;        // 波形解析用
+// AudioContext（全ての基準時間）
+const ctx = new AudioContext();
+let sourceNode = null;
+let audioBuffer = null;
+
 let isPlaying = false;
 let metroTimer = null;
 
@@ -46,40 +47,84 @@ function loadFromIndexedDB() {
 }
 
 // ================================
-// Blob → Audio / AudioBuffer に変換
+// Blob → AudioBuffer
 // ================================
 async function initAudio(blob) {
-    // 再生用
-    const url = URL.createObjectURL(blob);
-    audio = new Audio(url);
-
-    // 解析用
-    const ctx = new AudioContext();
     const arrayBuffer = await blob.arrayBuffer();
     audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 }
 
 // ================================
-// 再生 / 一時停止（SVG 切り替え）
+// 録音再生（AudioContext）
+// ================================
+function playRecording(startTime) {
+    if (sourceNode) {
+        sourceNode.stop();
+        sourceNode.disconnect();
+    }
+
+    sourceNode = ctx.createBufferSource();
+    sourceNode.buffer = audioBuffer;
+    sourceNode.connect(ctx.destination);
+    sourceNode.start(startTime);
+}
+
+// ================================
+// メトロノーム（常時 ON）
+// ================================
+function scheduleMetronome(startTime) {
+    const bpm = Number(bpmInput.value);
+    const interval = 60 / bpm;
+
+    let nextTime = startTime;
+
+    function tick() {
+        if (!isPlaying) return;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.value = 1000;
+        gain.gain.value = 0.25;
+
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(nextTime);
+        osc.stop(nextTime + 0.05);
+
+        nextTime += interval;
+        metroTimer = setTimeout(tick, interval * 1000);
+    }
+
+    tick();
+}
+
+// ================================
+// 再生ボタン（録音＋メトロノーム同期）
 // ================================
 playBtn.onclick = () => {
     const icon = document.getElementById("play-icon");
 
     if (!isPlaying) {
-        audio.play();
+        const startTime = ctx.currentTime + 0.05;
+
+        playRecording(startTime);
+        scheduleMetronome(startTime);
+
         icon.innerHTML = `
           <rect x="6" y="4" width="4" height="16"></rect>
           <rect x="14" y="4" width="4" height="16"></rect>
         `;
         icon.setAttribute("fill", "#000");
+
         isPlaying = true;
 
     } else {
-        audio.pause();
+        stopAll();
+
         icon.innerHTML = `
           <polygon points="6,4 20,12 6,20"></polygon>
         `;
         icon.setAttribute("fill", "#000");
+
         isPlaying = false;
     }
 };
@@ -87,65 +132,27 @@ playBtn.onclick = () => {
 // ================================
 // 停止
 // ================================
-stopBtn.onclick = () => {
-    audio.pause();
-    audio.currentTime = 0;
-
-    const icon = document.getElementById("play-icon");
-    icon.innerHTML = `
-      <polygon points="6,4 20,12 6,20"></polygon>
-    `;
-    icon.setAttribute("fill", "#000");
-
-    isPlaying = false;
-};
-
-// ================================
-// 巻き戻し / 早送り
-// ================================
-rewindBtn.onclick = () => {
-    audio.currentTime = Math.max(0, audio.currentTime - 10);
-};
-
-forwardBtn.onclick = () => {
-    audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
-};
-
-// ================================
-// メトロノーム（文字だけで ON/OFF）
-// ================================
-function playClick() {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.frequency.value = 1000;
-    gain.gain.value = 0.2;
-
-    osc.connect(gain).connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.05);
-}
-
-metroLabel.onclick = () => {
-    if (metroTimer) {
-        clearInterval(metroTimer);
-        metroTimer = null;
-
-        metroLabel.classList.remove("metro-on");
-        metroLabel.classList.add("metro-off");
-        return;
+function stopAll() {
+    if (sourceNode) {
+        sourceNode.stop();
+        sourceNode.disconnect();
+        sourceNode = null;
     }
 
-    const bpm = Number(bpmInput.value);
-    const interval = (60 / bpm) * 1000;
+    if (metroTimer) {
+        clearTimeout(metroTimer);
+        metroTimer = null;
+    }
+}
 
-    playClick();
-    metroTimer = setInterval(playClick, interval);
+stopBtn.onclick = stopAll;
 
-    metroLabel.classList.remove("metro-off");
-    metroLabel.classList.add("metro-on");
-};
+// ================================
+// 巻き戻し / 早送り（AudioContext 再生では不可）
+// → 解析画面では無効化 or 将来実装
+// ================================
+rewindBtn.onclick = () => alert("巻き戻しは AudioContext 再生では未対応です");
+forwardBtn.onclick = () => alert("早送りは AudioContext 再生では未対応です");
 
 // ================================
 // 波形描画
@@ -171,17 +178,16 @@ async function drawWaveform() {
 }
 
 // ================================
-// 高精度アタック検出（STFT なし版）
+// 高精度アタック検出
 // ================================
 function detectAttacks() {
     const data = audioBuffer.getChannelData(0);
     const sampleRate = audioBuffer.sampleRate;
 
-    const frameSize = 1024;     // 23ms
-    const hopSize = 512;        // 11ms
+    const frameSize = 1024;
+    const hopSize = 512;
     const energy = [];
 
-    // ① 短時間エネルギーを計算
     for (let i = 0; i < data.length - frameSize; i += hopSize) {
         let sum = 0;
         for (let j = 0; j < frameSize; j++) {
@@ -191,13 +197,11 @@ function detectAttacks() {
         energy.push(sum);
     }
 
-    // ② エネルギーの変化量（微分）
     const diff = [];
     for (let i = 1; i < energy.length; i++) {
         diff.push(energy[i] - energy[i - 1]);
     }
 
-    // ③ 平滑化（ローパス）
     const smooth = [];
     const smoothSize = 4;
     for (let i = 0; i < diff.length; i++) {
@@ -208,9 +212,8 @@ function detectAttacks() {
         smooth.push(s / smoothSize);
     }
 
-    // ④ ピーク検出
+    const threshold = average(smooth) * 2.5;
     const attacks = [];
-    const threshold = average(smooth) * 2.5;  // 自動閾値
 
     for (let i = 1; i < smooth.length - 1; i++) {
         if (smooth[i] > threshold &&
@@ -225,11 +228,9 @@ function detectAttacks() {
     return attacks;
 }
 
-// 平均値
 function average(arr) {
     return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
-
 
 // ================================
 // 早い / 遅い 判定
