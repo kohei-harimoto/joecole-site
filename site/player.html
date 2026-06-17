@@ -30,10 +30,10 @@
       z-index: 1000;
     }
 
-    /* ▼▼▼ 追加：録音パネル ▼▼▼ */
+    /* ▼▼▼ 録音パネル（横並び・ゴールド縁） ▼▼▼ */
     #record-panel {
       position: fixed;
-      top: 60px; /* header の高さ */
+      top: 60px;
       left: 0;
       width: 100%;
       background: #0d0d0d;
@@ -44,12 +44,10 @@
       box-sizing: border-box;
     }
 
-    #record-panel .bpm-row,
-    #record-panel .rec-row {
+    .record-row {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 6px;
+      gap: 14px;
     }
 
     #bpm-input {
@@ -62,31 +60,40 @@
       border-radius: 8px;
     }
 
-    #rec-btn {
+    /* REC（通常） */
+    #rec-btn.rec-off {
       background: #f53b3b;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: none;
+      border: 2px solid transparent;
       font-size: 14px;
       font-weight: 600;
     }
 
-    #stop-btn {
+    /* REC（録音中 → ゴールド縁） */
+    #rec-btn.rec-on {
+      border-color: #f5c400;
+      box-shadow: 0 0 10px rgba(245,196,0,0.6);
+    }
+
+    /* STOP（通常） */
+    #stop-btn.stop-off {
       background: #444;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: none;
+      border: 2px solid transparent;
       font-size: 14px;
       font-weight: 600;
     }
 
-    #rec-status {
-      font-size: 12px;
-      opacity: 0.7;
+    /* STOP（停止中 → ゴールド縁） */
+    #stop-btn.stop-on {
+      border-color: #f5c400;
+      box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
-    /* ▲▲▲ 追加：録音パネル ▲▲▲ */
+    /* ▲▲▲ 録音パネル ▲▲▲ */
 
     /* ▼▼▼ トラックカードの位置調整 ▼▼▼ */
     #tracks-container {
@@ -246,19 +253,15 @@
 
   <div class="header" id="song-title"></div>
 
-  <!-- ▼▼▼ 追加：録音UI ▼▼▼ -->
+  <!-- ▼▼▼ 録音UI（横並び・ゴールド縁） ▼▼▼ -->
   <div id="record-panel">
-    <div class="bpm-row">
+    <div class="record-row">
       <label>BPM:</label>
       <input id="bpm-input" type="number" value="120">
-    </div>
 
-    <div class="rec-row">
-      <button id="rec-btn">● REC</button>
-      <button id="stop-btn">■ STOP</button>
+      <button id="rec-btn" class="rec-off">● REC</button>
+      <button id="stop-btn" class="stop-off">■ STOP</button>
     </div>
-
-    <div id="rec-status">Status: Stopped</div>
   </div>
   <!-- ▲▲▲ -->
 
