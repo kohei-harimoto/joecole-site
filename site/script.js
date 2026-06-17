@@ -57,6 +57,38 @@ if (location.pathname.endsWith("player.html")) {
     let mediaRecorder;
     let recordedChunks = [];
 
+    // ▼ IndexedDB
+    let db;
+    const DB_NAME = "recordDB";
+    const STORE_NAME = "records";
+
+    // ================================
+    // IndexedDB 初期化
+    // ================================
+    const request = indexedDB.open(DB_NAME, 1);
+
+    request.onupgradeneeded = e => {
+        db = e.target.result;
+        db.createObjectStore(STORE_NAME);
+    };
+
+    request.onsuccess = e => {
+        db = e.target.result;
+    };
+
+    // ================================
+    // IndexedDB 保存関数
+    // ================================
+    function saveToIndexedDB(blob) {
+        return new Promise(resolve => {
+            const tx = db.transaction(STORE_NAME, "readwrite");
+            const store = tx.objectStore(STORE_NAME);
+            store.put(blob, "recordedAudio");
+
+            tx.oncomplete = () => resolve();
+        });
+    }
+
     // ================================
     // REC ボタン（録音開始）
     // ================================
@@ -66,7 +98,6 @@ if (location.pathname.endsWith("player.html")) {
 
         analyzeBtn.classList.remove("ready");
 
-        // マイク取得
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
         recordedChunks = [];
@@ -94,7 +125,7 @@ if (location.pathname.endsWith("player.html")) {
     };
 
     // ================================
-    // ANALYZE ボタン（録音データを Base64 にして遷移）
+    // ANALYZE ボタン（録音データを IndexedDB に保存 → 遷移）
     // ================================
     analyzeBtn.onclick = async () => {
         if (recordedChunks.length === 0) {
@@ -103,19 +134,11 @@ if (location.pathname.endsWith("player.html")) {
         }
 
         const blob = new Blob(recordedChunks, { type: "audio/webm" });
-        const base64 = await blobToBase64(blob);
 
-        location.href = `analyze.html?song=${encodeURIComponent(songName)}&rec=${encodeURIComponent(base64)}`;
+        await saveToIndexedDB(blob);
+
+        location.href = `analyze.html?song=${encodeURIComponent(songName)}`;
     };
-
-    // Blob → Base64
-    function blobToBase64(blob) {
-        return new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(",")[1]);
-            reader.readAsDataURL(blob);
-        });
-    }
 
     // ================================
     // 再生関連
