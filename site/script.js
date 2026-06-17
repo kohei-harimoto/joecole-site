@@ -53,20 +53,26 @@ if (location.pathname.endsWith("player.html")) {
     const stopRecBtn = document.getElementById("stop-btn");
     const analyzeBtn = document.getElementById("analyze-btn");
 
+    // ================================
+    // REC ボタン
+    // ================================
     recBtn.onclick = () => {
         recBtn.classList.add("rec-on");
         stopRecBtn.classList.remove("stop-on");
 
-        analyzeBtn.classList.remove("analyze-ready");
-        analyzeBtn.classList.add("analyze-hidden");
+        // ANALYZE の光を消す
+        analyzeBtn.classList.remove("ready");
     };
 
+    // ================================
+    // STOP ボタン
+    // ================================
     stopRecBtn.onclick = () => {
         stopRecBtn.classList.add("stop-on");
         recBtn.classList.remove("rec-on");
 
-        analyzeBtn.classList.remove("analyze-hidden");
-        analyzeBtn.classList.add("analyze-ready");
+        // 録音停止後 → ANALYZE を光らせる
+        analyzeBtn.classList.add("ready");
     };
 
     let audioElements = [];
