@@ -53,35 +53,77 @@ if (location.pathname.endsWith("player.html")) {
     const stopRecBtn = document.getElementById("stop-btn");
     const analyzeBtn = document.getElementById("analyze-btn");
 
+    // ▼ MediaRecorder 用
+    let mediaRecorder;
+    let recordedChunks = [];
+
     // ================================
-    // REC ボタン
+    // REC ボタン（録音開始）
     // ================================
-    recBtn.onclick = () => {
+    recBtn.onclick = async () => {
         recBtn.classList.add("rec-on");
         stopRecBtn.classList.remove("stop-on");
 
-        // ANALYZE の光を消す
         analyzeBtn.classList.remove("ready");
+
+        // マイク取得
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.start();
     };
 
     // ================================
-    // STOP ボタン
+    // STOP ボタン（録音停止）
     // ================================
     stopRecBtn.onclick = () => {
         stopRecBtn.classList.add("stop-on");
         recBtn.classList.remove("rec-on");
 
-        // 録音停止後 → ANALYZE を光らせる
         analyzeBtn.classList.add("ready");
+
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+        }
     };
 
+    // ================================
+    // ANALYZE ボタン（録音データを Base64 にして遷移）
+    // ================================
+    analyzeBtn.onclick = async () => {
+        if (recordedChunks.length === 0) {
+            alert("録音データがありません");
+            return;
+        }
+
+        const blob = new Blob(recordedChunks, { type: "audio/webm" });
+        const base64 = await blobToBase64(blob);
+
+        location.href = `analyze.html?song=${encodeURIComponent(songName)}&rec=${encodeURIComponent(base64)}`;
+    };
+
+    // Blob → Base64
+    function blobToBase64(blob) {
+        return new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+            reader.readAsDataURL(blob);
+        });
+    }
+
+    // ================================
+    // 再生関連
+    // ================================
     let audioElements = [];
     let isSeeking = false;
     let isPlaying = false;
 
-    // ================================
-    // tracks.json から mp3 のファイル名を取得
-    // ================================
     fetch("tracks/tracks.json")
         .then(res => res.json())
         .then(data => {
@@ -89,9 +131,6 @@ if (location.pathname.endsWith("player.html")) {
             parts.forEach(fileName => createTrackCard(fileName));
         });
 
-    // ================================
-    // トラックカード生成
-    // ================================
     function createTrackCard(fileName) {
         const card = document.createElement("div");
         card.className = "track-card";
@@ -167,9 +206,6 @@ if (location.pathname.endsWith("player.html")) {
         audioElements.push(audio);
     }
 
-    // ================================
-    // duration 更新
-    // ================================
     function updateDuration() {
         let maxDur = 0;
 
@@ -185,9 +221,6 @@ if (location.pathname.endsWith("player.html")) {
         }
     }
 
-    // ================================
-    // Play / Pause トグル
-    // ================================
     playBtn.onclick = () => {
         if (!isPlaying) {
             audioElements.forEach(a => {
@@ -215,9 +248,6 @@ if (location.pathname.endsWith("player.html")) {
         }
     };
 
-    // ================================
-    // 停止
-    // ================================
     stopBtn.onclick = () => {
         audioElements.forEach(a => {
             a.pause();
@@ -236,9 +266,6 @@ if (location.pathname.endsWith("player.html")) {
         isPlaying = false;
     };
 
-    // ================================
-    // 巻き戻し 10s
-    // ================================
     rewindBtn.onclick = () => {
         if (audioElements.length === 0) return;
 
@@ -257,9 +284,6 @@ if (location.pathname.endsWith("player.html")) {
         currentTimeLabel.textContent = formatTime(t);
     };
 
-    // ================================
-    // 早送り 10s
-    // ================================
     forwardBtn.onclick = () => {
         if (audioElements.length === 0) return;
 
@@ -278,9 +302,6 @@ if (location.pathname.endsWith("player.html")) {
         currentTimeLabel.textContent = formatTime(t);
     };
 
-    // ================================
-    // シークバー操作
-    // ================================
     seekBar.addEventListener("input", () => {
         if (audioElements.length === 0) return;
 
@@ -302,9 +323,6 @@ if (location.pathname.endsWith("player.html")) {
         isSeeking = false;
     });
 
-    // ================================
-    // 時間フォーマット
-    // ================================
     function formatTime(sec) {
         const m = Math.floor(sec / 60);
         const s = Math.floor(sec % 60);
