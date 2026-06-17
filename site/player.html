@@ -6,6 +6,9 @@
   <title>プレイヤー</title>
 
   <style>
+    /* ===============================
+       全体
+    =============================== */
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
       margin: 0;
@@ -30,7 +33,9 @@
       z-index: 1000;
     }
 
-    /* ▼▼▼ 録音パネル ▼▼▼ */
+    /* ===============================
+       録音パネル
+    =============================== */
     #record-panel {
       position: fixed;
       top: 60px;
@@ -60,7 +65,7 @@
       border-radius: 8px;
     }
 
-    /* REC（丸・固定） */
+    /* REC */
     #rec-btn {
       background: #f53b3b;
       color: #fff;
@@ -71,13 +76,12 @@
       font-weight: 600;
       transition: 0.15s ease;
     }
-
     #rec-btn.rec-on {
       border-color: #f5c400;
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
 
-    /* STOP（丸・固定） */
+    /* STOP */
     #stop-btn {
       background: #444;
       color: #fff;
@@ -88,13 +92,12 @@
       font-weight: 600;
       transition: 0.15s ease;
     }
-
     #stop-btn.stop-on {
       border-color: #f5c400;
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
 
-    /* ANALYZE（ふわっと表示） */
+    /* ANALYZE */
     #analyze-btn {
       background: #1a1a1a;
       color: #f5f5f7;
@@ -107,7 +110,6 @@
       pointer-events: none;
       transition: opacity 0.35s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
-
     #analyze-btn.analyze-ready {
       opacity: 1;
       pointer-events: auto;
@@ -119,8 +121,78 @@
       margin-top: 150px;
     }
 
-    /* ▼▼▼ プレイヤーUI ▼▼▼ */
+    /* ===============================
+       トラックカード
+    =============================== */
+    .track-card {
+      width: 90%;
+      background: rgba(20,20,22,0.9);
+      padding: 14px 16px;
+      margin: 20px auto 10px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
 
+    /* 音量バー（黄色に戻す） */
+    .track-card input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(
+        to right,
+        #f5c400 var(--value, 0%),
+        #444 var(--value, 0%)
+      );
+      outline: none;
+    }
+
+    .track-card input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #f5c400;
+      border: 2px solid #000;
+      margin-top: -6px;
+    }
+
+    /* MUTE / SOLO（横並び・元のサイズ） */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-row button {
+      flex: 1;
+      background: #1a1a1a;
+      color: #f5f5f7;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-row button.active {
+      background: #ff3b30;
+      border-color: #ff6b60;
+    }
+
+    .btn-row button.solo-active {
+      background: #f5c400;
+      color: #000;
+      border-color: #f5c400;
+    }
+
+    /* ===============================
+       フッター（再生UI）
+    =============================== */
     .footer {
       position: fixed;
       bottom: 0;
@@ -144,7 +216,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-sizing: border-box;
     }
 
     .footer button {
@@ -154,13 +225,9 @@
       border: 1px solid rgba(245,196,0,0.4);
       background: #1a1a1a;
       color: #f5f5f7;
-      cursor: pointer;
-      transition: 0.15s ease;
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 6px;
-      white-space: nowrap;
     }
 
     #play-all {
@@ -169,28 +236,19 @@
       border-color: #f5c400;
     }
 
-    .track-card {
-      width: 90%;
-      background: rgba(20,20,22,0.9);
-      padding: 14px 16px;
-      margin: 20px auto 10px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-
-    /* ▼ シークバーを元の長さに戻す ▼ */
+    /* シークバー（全幅） */
     #seek-bar {
-      width: 100% !important;
-      height: 6px !important;
-      margin-bottom: 4px !important;
-      border-radius: 999px !important;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(
+        to right,
+        #f5c400 var(--value, 0%),
+        #444 var(--value, 0%)
+      );
     }
 
-    input[type="range"]::-webkit-slider-thumb {
+    #seek-bar::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 18px;
       height: 18px;
@@ -198,34 +256,6 @@
       background: #f5c400;
       border: 2px solid #000;
       margin-top: -6px;
-    }
-
-    /* ▼ MUTE / SOLO を完全復元 ▼ */
-    .btn-row button {
-      background: #1a1a1a !important;
-      color: #f5f5f7 !important;
-      border: 1px solid rgba(255,255,255,0.12) !important;
-      border-radius: 999px !important;
-
-      padding: 8px 0 !important;
-      font-size: 13px !important;
-      min-height: 36px !important;
-      width: 100% !important;
-
-      letter-spacing: 0.04em !important;
-      font-weight: 600 !important;
-      box-shadow: none !important;
-    }
-
-    .btn-row button.active {
-      background: #ff3b30 !important;
-      border-color: #ff6b60 !important;
-    }
-
-    .btn-row button.solo-active {
-      background: #f5c400 !important;
-      color: #000 !important;
-      border-color: #f5c400 !important;
     }
 
   </style>
@@ -241,21 +271,18 @@
       <label>BPM:</label>
       <input id="bpm-input" type="number" value="120">
 
-      <button id="rec-btn" class="rec-off">● REC</button>
-      <button id="stop-btn" class="stop-off">■ STOP</button>
-
+      <button id="rec-btn">● REC</button>
+      <button id="stop-btn">■ STOP</button>
       <button id="analyze-btn" class="analyze-hidden">ANALYZE</button>
     </div>
   </div>
 
   <div id="tracks-container"></div>
 
-  <!-- ▼ プレイヤーUI ▼ -->
+  <!-- ▼ 再生UI ▼ -->
   <div class="footer">
     <div class="footer-row">
-      <div class="footer-left">
-        <button id="rewind">10s</button>
-      </div>
+      <button id="rewind">10s</button>
 
       <div class="footer-center">
         <button id="play-all">
@@ -271,9 +298,7 @@
         </button>
       </div>
 
-      <div class="footer-right">
-        <button id="forward">10s</button>
-      </div>
+      <button id="forward">10s</button>
     </div>
 
     <div class="seek-wrapper">
