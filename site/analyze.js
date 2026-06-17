@@ -23,7 +23,6 @@ let sourceNode = null;
 let audioBuffer = null;
 
 let isPlaying = false;
-let metroTimer = null;
 
 // ================================
 // IndexedDB から録音データを取得
@@ -70,7 +69,7 @@ function playRecording(startTime) {
 }
 
 // ================================
-// メトロノーム（常時 ON）
+// メトロノーム（常時 ON・AudioContext スケジューリング）
 // ================================
 function scheduleMetronome(startTime) {
     const bpm = Number(bpmInput.value);
@@ -78,23 +77,28 @@ function scheduleMetronome(startTime) {
 
     let nextTime = startTime;
 
-    function tick() {
+    function schedule() {
         if (!isPlaying) return;
 
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.frequency.value = 1000;
-        gain.gain.value = 0.25;
+        // 先読みしてクリックを予約（約 200ms 先まで）
+        while (nextTime < ctx.currentTime + 0.2) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
 
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(nextTime);
-        osc.stop(nextTime + 0.05);
+            osc.frequency.value = 1000;
+            gain.gain.value = 0.25;
 
-        nextTime += interval;
-        metroTimer = setTimeout(tick, interval * 1000);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(nextTime);
+            osc.stop(nextTime + 0.05);
+
+            nextTime += interval;
+        }
+
+        requestAnimationFrame(schedule);
     }
 
-    tick();
+    schedule();
 }
 
 // ================================
@@ -138,18 +142,13 @@ function stopAll() {
         sourceNode.disconnect();
         sourceNode = null;
     }
-
-    if (metroTimer) {
-        clearTimeout(metroTimer);
-        metroTimer = null;
-    }
+    isPlaying = false;
 }
 
 stopBtn.onclick = stopAll;
 
 // ================================
-// 巻き戻し / 早送り（AudioContext 再生では不可）
-// → 解析画面では無効化 or 将来実装
+// 巻き戻し / 早送り（AudioContext 再生では未対応）
 // ================================
 rewindBtn.onclick = () => alert("巻き戻しは AudioContext 再生では未対応です");
 forwardBtn.onclick = () => alert("早送りは AudioContext 再生では未対応です");
