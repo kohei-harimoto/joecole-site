@@ -171,23 +171,65 @@ async function drawWaveform() {
 }
 
 // ================================
-// アタック検出（簡易版）
+// 高精度アタック検出（STFT なし版）
 // ================================
 function detectAttacks() {
     const data = audioBuffer.getChannelData(0);
     const sampleRate = audioBuffer.sampleRate;
 
-    const threshold = 0.25;
-    const attacks = [];
+    const frameSize = 1024;     // 23ms
+    const hopSize = 512;        // 11ms
+    const energy = [];
 
-    for (let i = 1; i < data.length; i++) {
-        if (data[i] > threshold && data[i - 1] <= threshold) {
-            attacks.push(i / sampleRate);
+    // ① 短時間エネルギーを計算
+    for (let i = 0; i < data.length - frameSize; i += hopSize) {
+        let sum = 0;
+        for (let j = 0; j < frameSize; j++) {
+            const v = data[i + j];
+            sum += v * v;
+        }
+        energy.push(sum);
+    }
+
+    // ② エネルギーの変化量（微分）
+    const diff = [];
+    for (let i = 1; i < energy.length; i++) {
+        diff.push(energy[i] - energy[i - 1]);
+    }
+
+    // ③ 平滑化（ローパス）
+    const smooth = [];
+    const smoothSize = 4;
+    for (let i = 0; i < diff.length; i++) {
+        let s = 0;
+        for (let j = 0; j < smoothSize; j++) {
+            s += diff[Math.max(0, i - j)];
+        }
+        smooth.push(s / smoothSize);
+    }
+
+    // ④ ピーク検出
+    const attacks = [];
+    const threshold = average(smooth) * 2.5;  // 自動閾値
+
+    for (let i = 1; i < smooth.length - 1; i++) {
+        if (smooth[i] > threshold &&
+            smooth[i] > smooth[i - 1] &&
+            smooth[i] > smooth[i + 1]) {
+
+            const time = (i * hopSize) / sampleRate;
+            attacks.push(time);
         }
     }
 
     return attacks;
 }
+
+// 平均値
+function average(arr) {
+    return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
 
 // ================================
 // 早い / 遅い 判定
