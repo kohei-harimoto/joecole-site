@@ -34,7 +34,7 @@
     }
 
     /* ===============================
-       録音パネル
+       録音パネル（完全独立）
     =============================== */
     #record-panel {
       position: fixed;
@@ -42,7 +42,6 @@
       left: 0;
       width: 100%;
       background: #0d0d0d;
-      color: #f5f5f7;
       padding: 12px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
       z-index: 950;
@@ -65,56 +64,30 @@
       border-radius: 8px;
     }
 
-    /* REC */
-    #rec-btn {
-      background: #f53b3b;
-      color: #fff;
+    #rec-btn, #stop-btn, #analyze-btn {
       padding: 8px 16px;
       border-radius: 999px;
       border: 2px solid transparent;
       font-size: 14px;
       font-weight: 600;
-      transition: 0.15s ease;
-    }
-    #rec-btn.rec-on {
-      border-color: #f5c400;
-      box-shadow: 0 0 10px rgba(245,196,0,0.6);
-    }
-
-    /* STOP */
-    #stop-btn {
-      background: #444;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 2px solid transparent;
-      font-size: 14px;
-      font-weight: 600;
-      transition: 0.15s ease;
-    }
-    #stop-btn.stop-on {
-      border-color: #f5c400;
-      box-shadow: 0 0 10px rgba(245,196,0,0.6);
-    }
-
-    /* ANALYZE */
-    #analyze-btn {
       background: #1a1a1a;
-      color: #f5f5f7;
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 2px solid transparent;
-      font-size: 14px;
-      font-weight: 700;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.35s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      color: #fff;
     }
+
+    #rec-btn { background: #f53b3b; }
+    #stop-btn { background: #444; }
+
+    #rec-btn.rec-on,
+    #stop-btn.stop-on,
     #analyze-btn.analyze-ready {
-      opacity: 1;
-      pointer-events: auto;
       border-color: #f5c400;
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
+    }
+
+    #analyze-btn {
+      opacity: 1; /* ← 最初から表示 */
+      pointer-events: auto;
+      font-weight: 700;
     }
 
     #tracks-container {
@@ -122,7 +95,7 @@
     }
 
     /* ===============================
-       トラックカード
+       トラックカード（完全独立）
     =============================== */
     .track-card {
       width: 90%;
@@ -137,7 +110,7 @@
       border: 1px solid rgba(255,255,255,0.04);
     }
 
-    /* 音量バー（黄色に戻す） */
+    /* 音量バー（黄色固定） */
     .track-card input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
@@ -148,7 +121,6 @@
         #f5c400 var(--value, 0%),
         #444 var(--value, 0%)
       );
-      outline: none;
     }
 
     .track-card input[type="range"]::-webkit-slider-thumb {
@@ -161,7 +133,7 @@
       margin-top: -6px;
     }
 
-    /* MUTE / SOLO（横並び・元のサイズ） */
+    /* MUTE / SOLO（横並び固定） */
     .btn-row {
       display: flex;
       gap: 10px;
@@ -176,7 +148,6 @@
       padding: 8px 0;
       font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.04em;
     }
 
     .btn-row button.active {
@@ -191,7 +162,7 @@
     }
 
     /* ===============================
-       フッター（再生UI）
+       再生UI（完全独立）
     =============================== */
     .footer {
       position: fixed;
@@ -208,7 +179,6 @@
       flex-direction: column;
       align-items: center;
       gap: 12px;
-      box-sizing: border-box;
     }
 
     .footer-row {
@@ -236,7 +206,7 @@
       border-color: #f5c400;
     }
 
-    /* シークバー（全幅） */
+    /* シークバー（全幅 & 黄色固定） */
     #seek-bar {
       width: 100%;
       height: 6px;
@@ -273,7 +243,7 @@
 
       <button id="rec-btn">● REC</button>
       <button id="stop-btn">■ STOP</button>
-      <button id="analyze-btn" class="analyze-hidden">ANALYZE</button>
+      <button id="analyze-btn">ANALYZE</button>
     </div>
   </div>
 
