@@ -102,7 +102,7 @@
       border-radius: 999px;
       border: 2px solid transparent;
       font-size: 14px;
-      font-weight: 700; /* ← 太字 */
+      font-weight: 700;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.35s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -119,7 +119,7 @@
       margin-top: 150px;
     }
 
-    /* ▼▼▼ 以下、既存のプレイヤーUI ▼▼▼ */
+    /* ▼▼▼ プレイヤーUI ▼▼▼ */
 
     .footer {
       position: fixed;
@@ -195,17 +195,12 @@
       border: 1px solid rgba(255,255,255,0.04);
     }
 
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background: linear-gradient(
-        to right,
-        #f5c400 var(--value, 0%),
-        #444 var(--value, 0%)
-      );
-      outline: none;
+    /* ▼ シークバーを元の長さに戻す ▼ */
+    #seek-bar {
+      width: 100% !important;
+      height: 6px !important;
+      margin-bottom: 4px !important;
+      border-radius: 999px !important;
     }
 
     input[type="range"]::-webkit-slider-thumb {
@@ -217,52 +212,34 @@
       border: 2px solid #000;
       margin-top: -6px;
     }
-    /* ▼ MUTE / SOLO のデザインを録音UIから独立させる ▼ */
-.btn-row button {
-  background: #1a1a1a !important;
-  color: #f5f5f7 !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  border-radius: 999px !important;
-  padding: 7px 0 !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.04em !important;
-  box-shadow: none !important;
-}
 
-/* MUTE ON */
-.btn-row button.active {
-  background: #ff3b30 !important;
-  border-color: #ff6b60 !important;
-}
+    /* ▼ MUTE / SOLO を完全復元 ▼ */
+    .btn-row button {
+      background: #1a1a1a !important;
+      color: #f5f5f7 !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
+      border-radius: 999px !important;
 
-/* SOLO ON */
-.btn-row button.solo-active {
-  background: #f5c400 !important;
-  color: #000 !important;
-  border-color: #f5c400 !important;
-}
-/* ▼ MUTE / SOLO のサイズを強制的に戻す ▼ */
-.btn-row button {
-  padding: 10px 0 !important;     /* ← 高さを戻す */
-  font-size: 14px !important;     /* ← 文字サイズを戻す */
-  border-radius: 999px !important;
-  min-height: 34px !important;    /* ← ボタンの高さを固定 */
-  line-height: 1 !important;
-}
+      padding: 8px 0 !important;
+      font-size: 13px !important;
+      min-height: 36px !important;
+      width: 100% !important;
 
-/* MUTE ON */
-.btn-row button.active {
-  background: #ff3b30 !important;
-  border-color: #ff6b60 !important;
-}
+      letter-spacing: 0.04em !important;
+      font-weight: 600 !important;
+      box-shadow: none !important;
+    }
 
-/* SOLO ON */
-.btn-row button.solo-active {
-  background: #f5c400 !important;
-  color: #000 !important;
-  border-color: #f5c400 !important;
-}
+    .btn-row button.active {
+      background: #ff3b30 !important;
+      border-color: #ff6b60 !important;
+    }
+
+    .btn-row button.solo-active {
+      background: #f5c400 !important;
+      color: #000 !important;
+      border-color: #f5c400 !important;
+    }
 
   </style>
 </head>
@@ -280,7 +257,6 @@
       <button id="rec-btn" class="rec-off">● REC</button>
       <button id="stop-btn" class="stop-off">■ STOP</button>
 
-      <!-- 解析ボタン -->
       <button id="analyze-btn" class="analyze-hidden">ANALYZE</button>
     </div>
   </div>
