@@ -63,16 +63,27 @@ async function initAudio(blob) {
 // 再生 / 一時停止
 // ================================
 playBtn.onclick = () => {
+    const icon = document.getElementById("play-icon");
+
     if (!isPlaying) {
         audio.play();
-        playBtn.textContent = "⏸";
+        icon.innerHTML = `
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        `;
+        icon.setAttribute("fill", "#000");
         isPlaying = true;
+
     } else {
         audio.pause();
-        playBtn.textContent = "▶";
+        icon.innerHTML = `
+          <polygon points="6,4 20,12 6,20"></polygon>
+        `;
+        icon.setAttribute("fill", "#000");
         isPlaying = false;
     }
 };
+
 
 // ================================
 // 停止
