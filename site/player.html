@@ -30,7 +30,7 @@
       z-index: 1000;
     }
 
-    /* ▼▼▼ 録音パネル（横並び・ゴールド縁） ▼▼▼ */
+    /* ▼▼▼ 録音パネル ▼▼▼ */
     #record-panel {
       position: fixed;
       top: 60px;
@@ -60,48 +60,66 @@
       border-radius: 8px;
     }
 
-    /* REC（常に丸・border固定） */
+    /* REC（丸・固定） */
     #rec-btn {
       background: #f53b3b;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: 2px solid transparent; /* ← 形が変わらない */
+      border: 2px solid transparent;
       font-size: 14px;
       font-weight: 600;
       transition: 0.15s ease;
     }
 
-    /* REC（録音中 → ゴールド縁） */
     #rec-btn.rec-on {
       border-color: #f5c400;
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
 
-    /* STOP（常に丸・border固定） */
+    /* STOP（丸・固定） */
     #stop-btn {
       background: #444;
       color: #fff;
       padding: 8px 16px;
       border-radius: 999px;
-      border: 2px solid transparent; /* ← 形が変わらない */
+      border: 2px solid transparent;
       font-size: 14px;
       font-weight: 600;
       transition: 0.15s ease;
     }
 
-    /* STOP（停止中 → ゴールド縁） */
     #stop-btn.stop-on {
       border-color: #f5c400;
       box-shadow: 0 0 10px rgba(245,196,0,0.6);
     }
-    /* ▲▲▲ 録音パネル ▲▲▲ */
 
-    /* ▼▼▼ トラックカードの位置調整 ▼▼▼ */
-    #tracks-container {
-      margin-top: 150px; /* header + record-panel の高さ */
+    /* ANALYZE（ふわっと表示） */
+    #analyze-btn {
+      background: #1a1a1a;
+      color: #f5f5f7;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 700; /* ← 太字 */
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    /* ▲▲▲ */
+
+    #analyze-btn.analyze-ready {
+      opacity: 1;
+      pointer-events: auto;
+      border-color: #f5c400;
+      box-shadow: 0 0 10px rgba(245,196,0,0.6);
+    }
+
+    #tracks-container {
+      margin-top: 150px;
+    }
+
+    /* ▼▼▼ 以下、既存のプレイヤーUI ▼▼▼ */
 
     .footer {
       position: fixed;
@@ -158,11 +176,6 @@
       white-space: nowrap;
     }
 
-    .footer button:hover {
-      background: #2a2a2a;
-      border-color: rgba(245,196,0,0.9);
-    }
-
     #play-all {
       background: #f5c400;
       color: #000;
@@ -180,10 +193,6 @@
       flex-direction: column;
       gap: 8px;
       border: 1px solid rgba(255,255,255,0.04);
-    }
-
-    .track-card:first-child {
-      margin-top: 80px;
     }
 
     input[type="range"] {
@@ -208,46 +217,6 @@
       border: 2px solid #000;
       margin-top: -6px;
     }
-
-    .btn-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-row button {
-      flex: 1;
-      padding: 7px 0;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: #1a1a1a;
-      color: #f5f5f7;
-      font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 0.04em;
-    }
-
-    .btn-row button.active {
-      background: #ff3b30;
-      border-color: #ff6b60;
-    }
-
-    .btn-row button.solo-active {
-      background: #f5c400;
-      color: #000;
-      border-color: #f5c400;
-    }
-
-    .seek-wrapper {
-      width: 100%;
-      text-align: center;
-      color: #d1d1d6;
-      font-size: 12px;
-    }
-
-    #seek-bar {
-      width: 100%;
-      margin-bottom: 4px;
-    }
   </style>
 </head>
 
@@ -255,7 +224,7 @@
 
   <div class="header" id="song-title"></div>
 
-  <!-- ▼▼▼ 録音UI（横並び・ゴールド縁） ▼▼▼ -->
+  <!-- ▼ 録音UI ▼ -->
   <div id="record-panel">
     <div class="record-row">
       <label>BPM:</label>
@@ -263,24 +232,19 @@
 
       <button id="rec-btn" class="rec-off">● REC</button>
       <button id="stop-btn" class="stop-off">■ STOP</button>
+
+      <!-- 解析ボタン -->
+      <button id="analyze-btn" class="analyze-hidden">ANALYZE</button>
     </div>
   </div>
-  <!-- ▲▲▲ -->
 
   <div id="tracks-container"></div>
 
+  <!-- ▼ プレイヤーUI ▼ -->
   <div class="footer">
-
     <div class="footer-row">
-
       <div class="footer-left">
-        <button id="rewind">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#f5f5f7">
-            <polygon points="11,12 20,4 20,20"/>
-            <polygon points="4,12 13,4 13,20"/>
-          </svg>
-          10s
-        </button>
+        <button id="rewind">10s</button>
       </div>
 
       <div class="footer-center">
@@ -298,15 +262,8 @@
       </div>
 
       <div class="footer-right">
-        <button id="forward">
-          10s
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#f5f5f7">
-            <polygon points="4,4 13,12 4,20"/>
-            <polygon points="11,4 20,12 11,20"/>
-          </svg>
-        </button>
+        <button id="forward">10s</button>
       </div>
-
     </div>
 
     <div class="seek-wrapper">
@@ -316,7 +273,6 @@
         <span id="duration">0:00</span>
       </div>
     </div>
-
   </div>
 
   <script src="script.js"></script>
