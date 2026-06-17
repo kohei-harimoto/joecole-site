@@ -283,4 +283,25 @@ if (location.pathname.endsWith("player.html")) {
 
         audioElements.forEach(a => a.currentTime = t);
 
-        const base = audioElements[
+        const base = audioElements[0];
+        if (!isNaN(base.duration) && base.duration > 0) {
+            const percent = (t / base.duration) * 100;
+            seekBar.style.setProperty("--value", percent + "%");
+        }
+
+        currentTimeLabel.textContent = formatTime(t);
+    });
+
+    seekBar.addEventListener("change", () => {
+        isSeeking = false;
+    });
+
+    // ================================
+    // 時間フォーマット
+    // ================================
+    function formatTime(sec) {
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${s.toString().padStart(2, "0")}`;
+    }
+}
