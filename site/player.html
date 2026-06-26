@@ -30,92 +30,6 @@
       z-index: 1000;
     }
 
-    /* ▼▼▼ 録音パネル ▼▼▼ */
-    #record-panel {
-      position: fixed;
-      top: 60px;
-      left: 0;
-      width: 100%;
-      background: #0d0d0d;
-      color: #f5f5f7;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      z-index: 950;
-      box-sizing: border-box;
-    }
-
-    .record-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    #bpm-input {
-      width: 80px;
-      padding: 6px;
-      font-size: 16px;
-      background: #1a1a1a;
-      border: 1px solid rgba(245,196,0,0.4);
-      color: #f5f5f7;
-      border-radius: 8px;
-    }
-
-    /* REC */
-    #rec-btn {
-      background: #f53b3b;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 2px solid transparent;
-      font-size: 14px;
-      font-weight: 600;
-      transition: 0.15s ease;
-    }
-
-    #rec-btn.rec-on {
-      border-color: #f5c400;
-      box-shadow: 0 0 10px rgba(245,196,0,0.6);
-    }
-
-    /* STOP */
-    #stop-btn {
-      background: #444;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 2px solid transparent;
-      font-size: 14px;
-      font-weight: 600;
-      transition: 0.15s ease;
-    }
-
-    #stop-btn.stop-on {
-      border-color: #f5c400;
-      box-shadow: 0 0 10px rgba(245,196,0,0.6);
-    }
-
-    /* ▼ ANALYZE（専用CSS・他UIに干渉しない） ▼ */
-    #analyze-btn {
-      background: #1a1a1a;
-      color: #f5f5f7;
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 2px solid transparent;
-      font-size: 14px;
-      font-weight: 700;
-      transition: 0.15s ease;
-    }
-
-    #analyze-btn.ready {
-      border-color: #f5c400;
-      box-shadow: 0 0 10px rgba(245,196,0,0.6);
-    }
-    /* ▲ ANALYZE ▲ */
-
-    #tracks-container {
-      margin-top: 150px;
-    }
-
     .footer {
       position: fixed;
       bottom: 0;
@@ -171,6 +85,11 @@
       white-space: nowrap;
     }
 
+    .footer button:hover {
+      background: #2a2a2a;
+      border-color: rgba(245,196,0,0.9);
+    }
+
     #play-all {
       background: #f5c400;
       color: #000;
@@ -192,6 +111,12 @@
 
     .track-card:first-child {
       margin-top: 80px;
+    }
+
+    .track-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f5f5f7;
     }
 
     input[type="range"] {
@@ -263,27 +188,13 @@
 
   <div class="header" id="song-title"></div>
 
-  <!-- ▼▼▼ 録音UI ▼▼▼ -->
-  <div id="record-panel">
-    <div class="record-row">
-      <label>BPM:</label>
-      <input id="bpm-input" type="number" value="120">
-
-      <button id="rec-btn" class="rec-off">● REC</button>
-      <button id="stop-btn" class="stop-off">■ STOP</button>
-
-      <!-- ★ ANALYZE 追加 -->
-      <button id="analyze-btn">ANALYZE</button>
-    </div>
-  </div>
-  <!-- ▲▲▲ -->
-
   <div id="tracks-container"></div>
 
   <div class="footer">
 
     <div class="footer-row">
 
+      <!-- 巻き戻し（10s） -->
       <div class="footer-left">
         <button id="rewind">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="#f5f5f7">
@@ -294,6 +205,7 @@
         </button>
       </div>
 
+      <!-- 再生 / 停止（SVG切替） -->
       <div class="footer-center">
         <button id="play-all">
           <svg id="play-icon" width="22" height="22" viewBox="0 0 24 24" fill="#000">
@@ -308,6 +220,7 @@
         </button>
       </div>
 
+      <!-- 早送り（10s） -->
       <div class="footer-right">
         <button id="forward">
           10s
